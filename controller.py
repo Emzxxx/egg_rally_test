@@ -14,10 +14,11 @@ class GameController:
         dx = (pyxel.btn(pyxel.KEY_D) or pyxel.btn(pyxel.KEY_RIGHT)) - (pyxel.btn(pyxel.KEY_A) or pyxel.btn(pyxel.KEY_LEFT))
         dy = (pyxel.btn(pyxel.KEY_S) or pyxel.btn(pyxel.KEY_DOWN)) - (pyxel.btn(pyxel.KEY_W) or pyxel.btn(pyxel.KEY_UP))
 
+        # Move the egg's x and y by dx, dy without exceeding world_width and world_height
         self.model.egg.x = max(0, min(self.model.egg.x + dx * self.speed, self.model.world_width - self.model.egg.width))
         self.model.egg.y = max(0, min(self.model.egg.y + dy * self.speed, self.model.world_height - self.model.egg.height))
 
-        # Move eggnemies
+        # Move eggnemies to follow the egg's x
         for enemy in self.model.eggnemies:
             if self.model.game_should_stop():
                 continue
@@ -30,7 +31,7 @@ class GameController:
             elif enemy.y > self.model.egg.y:
                 enemy.y -= 1
 
-        # Damage and attack
+        # Continuously check for damage and attack
         self.model.update_damage_timer()
         self.model.damage_egg_if_touched()
 

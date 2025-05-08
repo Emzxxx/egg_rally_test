@@ -5,7 +5,7 @@
     "egg_hp": 10,
     "egg_width": 8,
     "egg_height": 10,
-    "eggnemy_count": 3,
+    "eggnemy_count": 10,
     "eggnemy_width": 8,
     "eggnemy_height": 10
   }
