@@ -1,6 +1,6 @@
 import pyxel
 import json
-from abc import ABC, abstractmethod
+from abc import ABC
 import random
 
 with open("settings.json") as f:
@@ -9,7 +9,7 @@ with open("settings.json") as f:
 i_frame: int = settings["fps"]
 
 class Egg(ABC):
-    def __init__(self, x, y, width, height, hp):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         self.x = x
         self.y = y
         self.width = width
@@ -18,19 +18,19 @@ class Egg(ABC):
         self.hp = hp
 
     @property
-    def top(self):
+    def top(self) -> int:
         return self.y
 
     @property
-    def bottom(self):
+    def bottom(self) -> int:
         return self.y + self.height
 
     @property
-    def left(self):
+    def left(self) -> int:
         return self.x
 
     @property
-    def right(self):
+    def right(self) -> int:
         return self.x + self.width
 
 class Eggnemy(Egg):
@@ -58,7 +58,7 @@ enemies: list[Eggnemy] = [
     for _ in range(settings["eggnemy_count"])
 ]
 
-def is_in_collision(egg: Egg, enemy: Eggnemy):
+def is_in_collision(egg: Egg, enemy: Eggnemy) -> bool:
     if egg.right < enemy.left:
         return False
     elif egg.left > enemy.right:
@@ -71,7 +71,7 @@ def is_in_collision(egg: Egg, enemy: Eggnemy):
         else:
             return True
 
-def is_in_range(egg: Egg, enemy: Eggnemy):
+def is_in_range(egg: Egg, enemy: Eggnemy) -> bool:
     if enemy.left - egg.right > egg_range:
         return False
     elif egg.left - enemy.right > egg_range:
