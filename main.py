@@ -145,8 +145,8 @@ egg = Egg(
 enemies: list[Eggnemy] = [
     Eggnemy(
         #TODO: Change so "New eggnemies may spawn on-screen and off-screen" increase range of random spawn points
-        random.randint(0, settings["world_width"]),
-        random.randint(0, settings["world_height"]),
+        random.randint(0-150, settings["world_width"]+150),
+        random.randint(0-150, settings["world_height"]+150),
         settings["eggnemy_width"], settings["eggnemy_height"], settings["eggnemy_initial_hp"]
     )
     for _ in range(settings["eggnemy_count"])
@@ -213,8 +213,8 @@ def update():
                 if (boss is None and 
                     eggnemies_defeated >= settings["boss_spawn_threshhold"]):
                         boss = Boss(
-                            random.randint(0, settings["world_width"]),
-                            random.randint(0, settings["world_height"]),
+                            random.randint(0-150, settings["world_width"]+150),
+                            random.randint(0-150, settings["world_height"]+150),
                             settings["boss_width"], settings["boss_height"], settings["boss_initial_hp"]
                         )
                         enemies.append(boss)
