@@ -52,6 +52,7 @@ class Eggnemy(Egg):
             hp
         )
         self.speed = 1
+        self.dps = 1
 
 class Boss(Eggnemy):
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
@@ -63,6 +64,7 @@ class Boss(Eggnemy):
             hp
         )
         self.speed = 1.5
+        self.dps = 3
 
 #helper functions
 def is_in_collision(egg: Egg, enemy: Eggnemy) -> bool:
@@ -194,7 +196,7 @@ def update():
         if i_frame > 0:
             break
         if is_in_collision(egg, enemy):
-            egg.hp -= 1
+            egg.hp -= enemy.dps
             i_frame = settings["fps"]
 
     if i_frame > 0:
