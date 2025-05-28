@@ -62,6 +62,7 @@ class Boss(Eggnemy):
         )
         self.speed = 1.5
 
+#helper functions
 def is_in_collision(egg: Egg, enemy: Eggnemy) -> bool:
     if egg.right < enemy.left:
         return False
@@ -90,6 +91,35 @@ def is_in_range(egg: Egg, enemy: Egg) -> bool:
 
 def remove_enemy(enemy: Eggnemy, Eggnemies: list[Eggnemy]):
     Eggnemies.remove(enemy)
+
+#TODO: Refactor this into class methods
+def shift_enemy_left(enemies: list[Eggnemy]):
+    if egg.relative_x + egg.width == settings["world_width"]:
+        return
+    
+    for enemy in enemies:
+        enemy.x -= egg.speed
+
+def shift_enemy_right(enemies: list[Eggnemy]):
+    if egg.relative_x == 0:
+        return
+    for enemy in enemies:
+        enemy.x += egg.speed
+
+def shift_enemy_up(enemies: list[Eggnemy]):
+    if egg.relative_y + egg.height == settings["world_height"]:
+        return
+    
+    for enemy in enemies:
+        enemy.y -= egg.speed
+
+def shift_enemy_down(enemies: list[Eggnemy]):
+    if egg.relative_y == 0:
+        return
+    
+    for enemy in enemies:
+        enemy.y += egg.speed
+
 
 # Initialize entities
 boss = None
@@ -121,13 +151,18 @@ def update():
 
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
         egg.relative_x = max(0, egg.relative_x - egg.speed)
+        shift_enemy_right(enemies)
     if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
         egg.relative_x = min(settings["world_width"] - egg.width, egg.relative_x + egg.speed)
+        shift_enemy_left(enemies)
     if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
         egg.relative_y = min(settings["world_height"] - egg.height, egg.relative_y + egg.speed)
+        shift_enemy_up(enemies)
     if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W):
         egg.relative_y = max(0, egg.relative_y - egg.speed)
+        shift_enemy_down(enemies)
 
+    #Can do better (refactor movemebt INTO an Egg class method)
     for enemy in enemies:
         if enemy.x < egg.x:
             enemy.x += enemy.speed
