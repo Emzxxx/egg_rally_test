@@ -75,7 +75,7 @@ egg = Egg(
     settings["world_height"] // 2,
     settings["egg_width"],
     settings["egg_height"],
-    settings["egg_hp"]
+    settings["egg_initial_hp"]
 )
 
 enemies: list[Eggnemy] = [
