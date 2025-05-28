@@ -19,6 +19,7 @@ class Egg(ABC):
         self.height = height
         self.max_hp = hp
         self.hp = hp
+        self.speed = 2
 
     @property
     def top(self) -> int:
@@ -37,8 +38,15 @@ class Egg(ABC):
         return self.x + self.width
 
 class Eggnemy(Egg):
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
-        super().__init__(x, y, width, height, hp)
+    def __init__(self, x: int, y: int):
+        super().__init__(
+            x,
+            y,
+            settings["eggnemy_width"],
+            settings["eggnemy_height"],
+            settings["eggnemy_initial_hp"]
+        )
+        self.speed = 1
 
 def is_in_collision(egg: Egg, enemy: Eggnemy) -> bool:
     if egg.right < enemy.left:
@@ -82,9 +90,6 @@ enemies: list[Eggnemy] = [
     Eggnemy(
         random.randint(0, settings["world_width"]),
         random.randint(0, settings["world_height"]),
-        settings["eggnemy_width"],
-        settings["eggnemy_height"],
-        1,
     )
     for _ in range(settings["eggnemy_count"])
 ]
@@ -93,29 +98,27 @@ def update():
     global i_frame
     global eggnemies_defeated
 
-    speed = 2
-
     if egg.hp == 0:
         return
 
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
-        egg.x = max(0, egg.x - speed)
+        egg.x = max(0, egg.x - egg.speed)
     if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
-        egg.x = min(settings["world_width"] - egg.width, egg.x + speed)
+        egg.x = min(settings["world_width"] - egg.width, egg.x + egg.speed)
     if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
-        egg.y = min(settings["world_height"] - egg.height, egg.y + speed)
+        egg.y = min(settings["world_height"] - egg.height, egg.y + egg.speed)
     if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W):
-        egg.y = max(0, egg.y - speed)
+        egg.y = max(0, egg.y - egg.speed)
 
     for enemy in enemies:
         if enemy.x < egg.x:
-            enemy.x += 1
+            enemy.x += enemy.speed
         if enemy.x > egg.x:
-            enemy.x -= 1
+            enemy.x -= enemy.speed
         if enemy.y < egg.y:
-            enemy.y += 1
+            enemy.y += enemy.speed
         if enemy.y > egg.y:
-            enemy.y -= 1
+            enemy.y -= enemy.speed
 
     for enemy in enemies:
         if i_frame > 0:
@@ -131,9 +134,10 @@ def update():
         for enemy in enemies[:]:
             if is_in_range(egg, enemy):
                 enemy.hp -= 1
-                remove_enemy(enemy, enemies)
-                eggnemies_defeated += 1
-                print(eggnemies_defeated)
+                if enemy.hp == 0:
+                    remove_enemy(enemy, enemies)
+                    eggnemies_defeated += 1
+                # print(eggnemies_defeated) ## debug
 
 def draw_egg(egg: Egg):
     pyxel.rect(egg.x, egg.y, egg.width, egg.height, 7)
