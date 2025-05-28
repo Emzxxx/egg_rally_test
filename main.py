@@ -15,11 +15,14 @@ class Egg(ABC):
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         self.x = x
         self.y = y
+        self.relative_x = x
+        self.relative_y = y
         self.width = width
         self.height = height
         self.max_hp = hp
         self.hp = hp
         self.speed = 2
+        
 
     @property
     def top(self) -> int:
@@ -36,26 +39,26 @@ class Egg(ABC):
     @property
     def right(self) -> int:
         return self.x + self.width
-
+    
 class Eggnemy(Egg):
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         super().__init__(
             x,
             y,
-            settings["eggnemy_width"],
-            settings["eggnemy_height"],
-            settings["eggnemy_initial_hp"]
+            width,
+            height,
+            hp
         )
         self.speed = 1
 
-class Boss(Egg):
-    def __init__(self, x: int, y: int):
+class Boss(Eggnemy):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         super().__init__(
             x,
             y,
-            settings["boss_width"],
-            settings["boss_height"],
-            settings["boss_initial_hp"]
+            width,
+            height,
+            hp
         )
         self.speed = 1.5
 
@@ -72,7 +75,7 @@ def is_in_collision(egg: Egg, enemy: Eggnemy) -> bool:
         else:
             return True
 
-def is_in_range(egg: Egg, enemy: Eggnemy | Boss) -> bool:
+def is_in_range(egg: Egg, enemy: Egg) -> bool:
     if enemy.left - egg.right > egg_range:
         return False
     elif egg.left - enemy.right > egg_range:
@@ -87,7 +90,6 @@ def is_in_range(egg: Egg, enemy: Eggnemy | Boss) -> bool:
 
 def remove_enemy(enemy: Eggnemy, Eggnemies: list[Eggnemy]):
     Eggnemies.remove(enemy)
-
 
 # Initialize entities
 boss = None
@@ -104,6 +106,7 @@ enemies: list[Eggnemy] = [
     Eggnemy(
         random.randint(0, settings["world_width"]),
         random.randint(0, settings["world_height"]),
+        settings["eggnemy_width"], settings["eggnemy_height"], settings["eggnemy_initial_hp"]
     )
     for _ in range(settings["eggnemy_count"])
 ]
@@ -117,13 +120,13 @@ def update():
         return
 
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
-        egg.x = max(0, egg.x - egg.speed)
+        egg.relative_x = max(0, egg.relative_x - egg.speed)
     if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
-        egg.x = min(settings["world_width"] - egg.width, egg.x + egg.speed)
+        egg.relative_x = min(settings["world_width"] - egg.width, egg.relative_x + egg.speed)
     if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
-        egg.y = min(settings["world_height"] - egg.height, egg.y + egg.speed)
+        egg.relative_y = min(settings["world_height"] - egg.height, egg.relative_y + egg.speed)
     if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W):
-        egg.y = max(0, egg.y - egg.speed)
+        egg.relative_y = max(0, egg.relative_y - egg.speed)
 
     for enemy in enemies:
         if enemy.x < egg.x:
@@ -165,10 +168,18 @@ def update():
                 # print(eggnemies_defeated) ## debug
                 if (boss is None and 
                     eggnemies_defeated >= settings["boss_spawn_threshhold"]):
-                    boss = Boss(
-                        random.randint(0, settings["world_width"]),
-                        random.randint(0, settings["world_height"])
-                    )
+                        boss = Boss(
+                            random.randint(0, settings["world_width"]),
+                            random.randint(0, settings["world_height"]),
+                            settings["boss_width"], settings["boss_height"], settings["boss_initial_hp"]
+                        )
+                        enemies.append(boss)
+
+def draw_world_border():
+    pyxel.rectb(settings["world_width"]//2 - egg.relative_x,
+               settings["world_height"]//2 - egg.relative_y,
+               settings["world_width"], settings["world_height"], 
+               7)
 
 def draw_egg(egg: Egg):
     pyxel.rect(egg.x, egg.y, egg.width, egg.height, 7)
@@ -198,6 +209,7 @@ def draw_boss_hp(boss: Boss):
 
 def draw():
     pyxel.cls(0)
+    draw_world_border()
     draw_egg(egg)
     draw_egg_hp(egg)
     draw_range(egg)
@@ -205,8 +217,9 @@ def draw():
     draw_eggnemies_defeated(eggnemies_defeated)
     draw_eggnemies_hp(enemies)
     if boss:
-        draw_boss(boss)
-        draw_boss_hp(boss)
+        if boss.hp > 0:
+            draw_boss(boss)
+            draw_boss_hp(boss)
 
 def main():
     pyxel.init(settings["world_width"], settings["world_height"], fps=settings["fps"])
