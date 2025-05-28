@@ -10,6 +10,8 @@ with open("settings.json") as f:
 i_frame: int = settings["fps"]
 egg_range: int = 10
 eggnemies_defeated: int = 0
+total_frames_passed: int = 0
+game_over_win: bool = False
 
 class Egg(ABC):
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
@@ -120,6 +122,12 @@ def shift_enemy_down(enemies: list[Eggnemy]):
     for enemy in enemies:
         enemy.y += egg.speed
 
+def timer_from_frames(frames: int):
+    seconds: int = frames // settings["fps"]
+    minutes: int = seconds // 60
+
+    return str(minutes) + " : " + str(seconds) if seconds >= 10 else str(minutes) + " : 0" + str(seconds)
+
 
 # Initialize entities
 boss = None
@@ -134,20 +142,29 @@ egg = Egg(
 
 enemies: list[Eggnemy] = [
     Eggnemy(
+        #TODO: Change so "New eggnemies may spawn on-screen and off-screen" increase range of random spawn points
         random.randint(0, settings["world_width"]),
         random.randint(0, settings["world_height"]),
         settings["eggnemy_width"], settings["eggnemy_height"], settings["eggnemy_initial_hp"]
     )
     for _ in range(settings["eggnemy_count"])
 ]
-
+#TODO DONE: Add dissapearing of egg, egg hp, and egg range when hp reaches 0
+#TODO: Add timer, add stopping entities when no more boss
 def update():
     global i_frame
     global eggnemies_defeated
     global boss
+    global total_frames_passed, game_over_win
 
     if egg.hp == 0:
         return
+    if (len(enemies) == 0):
+        #No more enemies
+        # Banks on the fact boss only spawns when all enemies are dead
+        # Can and should prilly be refactored for future usage
+        game_over_win = True
+        return 
 
     if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
         egg.relative_x = max(0, egg.relative_x - egg.speed)
@@ -173,16 +190,6 @@ def update():
         if enemy.y > egg.y:
             enemy.y -= enemy.speed
     
-    if boss:
-        if boss.x < egg.x:
-            boss.x += boss.speed
-        if boss.x > egg.x:
-            boss.x -= boss.speed
-        if boss.y < egg.y:
-            boss.y += boss.speed
-        if boss.y > egg.y:
-            boss.y -= boss.speed
-
     for enemy in enemies:
         if i_frame > 0:
             break
@@ -209,6 +216,9 @@ def update():
                             settings["boss_width"], settings["boss_height"], settings["boss_initial_hp"]
                         )
                         enemies.append(boss)
+    
+    total_frames_passed += 1
+
 
 def draw_world_border():
     pyxel.rectb(settings["world_width"]//2 - egg.relative_x,
@@ -217,7 +227,10 @@ def draw_world_border():
                7)
 
 def draw_egg(egg: Egg):
-    pyxel.rect(egg.x, egg.y, egg.width, egg.height, 7)
+    if egg.hp > 0:
+        pyxel.rect(egg.x, egg.y, egg.width, egg.height, 7)
+        draw_range(egg)
+        draw_egg_hp(egg)
 
 def draw_egg_hp(egg: Egg):
     pyxel.text(egg.x - 5, egg.y + 10, f"{egg.hp}/{egg.max_hp}", 7)
@@ -231,6 +244,12 @@ def draw_eggnemies(enemies: list[Eggnemy]) -> None:
 
 def draw_eggnemies_defeated(eggnemies_defeated: int):
     pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
+
+def draw_time_passed(total_frames_passed: int):
+    pyxel.text(settings["world_width"]-40, 10, timer_from_frames(total_frames_passed), 7)
+
+def draw_win_message():
+    pyxel.text(settings["world_width"]//2-10, settings["world_height"]//2-20, "You Win!", 7)
 
 def draw_eggnemies_hp(enemies: list[Eggnemy]) -> None:
     for enemy in enemies:
@@ -246,15 +265,16 @@ def draw():
     pyxel.cls(0)
     draw_world_border()
     draw_egg(egg)
-    draw_egg_hp(egg)
-    draw_range(egg)
     draw_eggnemies(enemies)
     draw_eggnemies_defeated(eggnemies_defeated)
+    draw_time_passed(total_frames_passed)
     draw_eggnemies_hp(enemies)
     if boss:
         if boss.hp > 0:
             draw_boss(boss)
             draw_boss_hp(boss)
+    if game_over_win:
+        draw_win_message()
 
 def main():
     pyxel.init(settings["world_width"], settings["world_height"], fps=settings["fps"])
