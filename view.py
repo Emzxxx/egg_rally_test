@@ -1,6 +1,5 @@
 import pyxel
-from project_types import EggInfo
-from project_types import UpdateHandler, DrawHandler
+from project_types import EggInfo, UpdateHandler, DrawHandler
 from collections.abc import Sequence
 
 
