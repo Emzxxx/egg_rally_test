@@ -1,0 +1,181 @@
+import random
+from abc import ABC
+from typing import Literal, Any
+
+
+egg_range: int = 10
+
+
+class Egg(ABC):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+        self.x = x
+        self.y = y
+        self.relative_x = x
+        self.relative_y = y
+        self.width = width
+        self.height = height
+        self.max_hp = hp
+        self.hp = hp
+        self.speed = 2
+
+    @property
+    def top(self) -> int:
+        return self.y
+
+    @property
+    def bottom(self) -> int:
+        return self.y + self.height
+
+    @property
+    def left(self) -> int:
+        return self.x
+
+    @property
+    def right(self) -> int:
+        return self.x + self.width
+
+
+class Eggnemy(Egg):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+        super().__init__(x, y, width, height, hp)
+        self.speed = 1
+        self.dps = 1
+
+
+class Boss(Eggnemy):
+    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+        super().__init__(x, y, width, height, hp)
+        self.speed = 1.5
+        self.dps = 3
+
+
+class GameModel:
+    def __init__(self, settings: dict[str, Any]):
+        self.settings = settings
+        self._width: int = settings["world_width"]
+        self._height: int = settings["world_height"]
+        self._fps: int = settings["fps"]
+
+        self.egg: Egg = Egg(
+            settings["world_width"] // 2,
+            settings["world_height"] // 2,
+            settings["egg_width"],
+            settings["egg_height"],
+            settings["egg_initial_hp"]
+        )
+        self.eggnemies: list[Eggnemy] = [
+            Eggnemy(
+                random.randint(-150, settings["world_width"] + 150),
+                random.randint(-150, settings["world_height"] + 150),
+                settings["eggnemy_width"],
+                settings["eggnemy_height"],
+                settings["eggnemy_initial_hp"]
+            )
+            for _ in range(settings["eggnemy_count"])
+        ]
+        self.boss: Boss | None = None
+        self.i_frame: int = 0
+        self.eggnemies_defeated: int = 0
+        self.total_frames_passed: int = 0
+        self.game_over_win: bool = False
+
+    def is_in_collision(self, enemy: Eggnemy) -> bool:
+        egg = self.egg
+        if egg.right < enemy.left or egg.left > enemy.right:
+            return False
+        if egg.top > enemy.bottom or egg.bottom < enemy.top:
+            return False
+        return True
+
+    def is_in_range(self, enemy: Eggnemy) -> bool:
+        egg = self.egg
+        if enemy.left - egg.right > egg_range or egg.left - enemy.right > egg_range:
+            return False
+        if egg.top - enemy.bottom > egg_range or enemy.top - egg.bottom > egg_range:
+            return False
+        return True
+
+    def shift_enemies(self, direction: Literal["left", "right", "up", "down"]):
+        dx, dy = 0, 0
+        if direction == "left" and self.egg.relative_x + self.egg.width < self.settings["world_width"]:
+            dx = -self.egg.speed
+        elif direction == "right" and self.egg.relative_x > 0:
+            dx = self.egg.speed
+        elif direction == "up" and self.egg.relative_y + self.egg.height < self.settings["world_height"]:
+            dy = -self.egg.speed
+        elif direction == "down" and self.egg.relative_y > 0:
+            dy = self.egg.speed
+
+        for enemy in self.eggnemies:
+            enemy.x += dx
+            enemy.y += dy
+
+    def update_entities(self):
+        for enemy in self.eggnemies:
+            if enemy.x < self.egg.x:
+                enemy.x += enemy.speed
+            elif enemy.x > self.egg.x:
+                enemy.x -= enemy.speed
+            if enemy.y < self.egg.y:
+                enemy.y += enemy.speed
+            elif enemy.y > self.egg.y:
+                enemy.y -= enemy.speed
+
+        if self.i_frame == 0:
+            for enemy in self.eggnemies:
+                if self.is_in_collision(enemy):
+                    self.egg.hp -= enemy.dps
+                    self.i_frame = self._fps
+                    break
+
+        if self.i_frame > 0:
+            self.i_frame -= 1
+
+    def attack(self):
+        for enemy in self.eggnemies[:]:
+            if self.is_in_range(enemy):
+                enemy.hp -= 1
+                if enemy.hp == 0:
+                    self.eggnemies.remove(enemy)
+                    self.eggnemies_defeated += 1
+
+        if (
+            self.boss is None and
+            self.eggnemies_defeated >= self.settings["boss_spawn_threshhold"]
+        ):
+            self.boss = Boss(
+                random.randint(-150, self.settings["world_width"] + 150),
+                random.randint(-150, self.settings["world_height"] + 150),
+                self.settings["boss_width"],
+                self.settings["boss_height"],
+                self.settings["boss_initial_hp"]
+            )
+            self.eggnemies.append(self.boss)
+
+    def tick(self):
+        if self.egg.hp == 0:
+            return
+
+        if len(self.eggnemies) == 0:
+            self.game_over_win = True
+            return
+
+        self.update_entities()
+        self.total_frames_passed += 1
+
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def fps(self):
+        return self._fps
+
+    @property
+    def export_egg(self):
+        return self.egg
