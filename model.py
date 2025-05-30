@@ -71,23 +71,25 @@ class GameModel:
         self._width: int = settings["world_width"]
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
+        self.init_state()
 
+    def init_state(self):
         self.egg: Egg = Egg(
-            settings["world_width"] // 2,
-            settings["world_height"] // 2,
-            settings["egg_width"],
-            settings["egg_height"],
-            settings["egg_initial_hp"]
+            self._settings["world_width"] // 2,
+            self._settings["world_height"] // 2,
+            self._settings["egg_width"],
+            self._settings["egg_height"],
+            self._settings["egg_initial_hp"]
         )
         self.eggnemies: list[Eggnemy] = [
             Eggnemy(
-                random.randint(-150, settings["world_width"] + 150),
-                random.randint(-150, settings["world_height"] + 150),
-                settings["eggnemy_width"],
-                settings["eggnemy_height"],
-                settings["eggnemy_initial_hp"]
+                random.randint(-150, self._settings["world_width"] + 150),
+                random.randint(-150, self._settings["world_height"] + 150),
+                self._settings["eggnemy_width"],
+                self._settings["eggnemy_height"],
+                self._settings["eggnemy_initial_hp"]
             )
-            for _ in range(settings["eggnemy_count"])
+            for _ in range(self._settings["eggnemy_count"])
         ]
         self.boss: Boss | None = None
         self.boss_has_spawned: bool = False
@@ -174,9 +176,12 @@ class GameModel:
             self.boss_has_spawned = True
             self.eggnemies.append(self.boss)
 
-    def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool):
+    def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool, pressing_restart: bool):
+        if pressing_restart and (self.game_over_win or self.egg.hp <= 0):
+            self.init_state()
+
         egg = self.egg
-        
+
         if egg.hp <= 0 or self.game_over_win:
             return
 
@@ -203,7 +208,6 @@ class GameModel:
 
         self.update_entities()
         self.total_frames_passed += 1
-
 
     @property
     def width(self):
