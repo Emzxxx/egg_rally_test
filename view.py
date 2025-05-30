@@ -52,11 +52,24 @@ class GameView:
         pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
 
     def draw_time_passed(self, total_frames_passed: int, fps: int):
-        seconds = total_frames_passed // fps
+        pyxel.text(self._width - 40, 10, self.convert_frame_to_time(total_frames_passed, fps), 7)
+
+    def draw_leaderboard(self, leaderboard: list[int], fps: int):
+        score_ctr: int = 0
+        pyxel.text(20, self._height - 40, "Top", 7)
+        for score in leaderboard:
+            pyxel.text(40, self._height - (40 - 10*score_ctr), self.convert_frame_to_time(score, fps), 7)
+            score_ctr += 1
+        while score_ctr < 3:
+            pyxel.text(40, self._height - (40 - 10*score_ctr), "--:--", 7)
+            score_ctr += 1
+        
+
+    def convert_frame_to_time(self, frame_count: int, fps: int):
+        seconds = frame_count // fps
         minutes = seconds // 60
         seconds %= 60
-        time_str = f"{minutes} : {seconds:02}"
-        pyxel.text(self._width - 40, 10, time_str, 7)
+        return f"{minutes} : {seconds:02}"
 
     def draw_eggnemies_hp(self, enemies: Sequence[EggInfo]):
         for enemy in enemies:

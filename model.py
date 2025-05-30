@@ -71,6 +71,7 @@ class GameModel:
         self._width: int = settings["world_width"]
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
+        self.leaderboard: list[int] = []
         self.init_state()
 
     def init_state(self):
@@ -131,6 +132,13 @@ class GameModel:
             enemy.x += dx
             enemy.y += dy
 
+    def add_to_leaderboard(self, new_score_in_frames: int):
+        #Pretty lazy way of doing it
+        self.leaderboard.append(new_score_in_frames)
+        self.leaderboard.sort()
+        if len(self.leaderboard) > 3:
+            self.leaderboard.pop()
+
     def update_entities(self):
         for enemy in self.eggnemies:
             if enemy.x < self.egg.x:
@@ -179,6 +187,7 @@ class GameModel:
 
     def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool, pressing_restart: bool):
         if pressing_restart and (self._game_over_win or self._game_over_loss):
+            self.add_to_leaderboard(self.total_frames_passed)
             self.init_state()
 
         egg = self.egg
@@ -210,7 +219,7 @@ class GameModel:
 
         self.update_entities()
         self.total_frames_passed += 1
-
+    
     @property
     def width(self):
         return self._width

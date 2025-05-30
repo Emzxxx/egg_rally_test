@@ -31,6 +31,7 @@ class GameController:
         self._view.draw_eggnemies_defeated(self._model.eggnemies_defeated)
         self._view.draw_time_passed(self._model.total_frames_passed, self._model.fps)
         self._view.draw_eggnemies_hp(self._model.eggnemies)
+        self._view.draw_leaderboard(self._model.leaderboard, self._model.fps)
 
         if self._model.boss and self._model.boss.hp > 0:
             self._view.draw_boss(self._model.boss)
