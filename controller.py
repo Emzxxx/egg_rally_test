@@ -6,7 +6,6 @@ from view import GameView
     TODO: 
     - Boss Spawning Logic (Model)
     - Win conditions (Model)
-
 '''
 class GameController:
     def __init__(self, model: GameModel, view: GameView):
@@ -19,29 +18,13 @@ class GameController:
         self._view.start(model.fps, self, self)
 
     def update(self):
-        #TODO: Should really just have this in model by definition of mvc
-        egg = self._model.egg
-
-        if egg.hp == 0 or self._model.game_over_win:
-            return
-
-        if self._view.pressing_left_key():
-            egg.relative_x = max(0, egg.relative_x - egg.speed)
-            self._model.shift_enemies("right")
-        if self._view.pressing_right_key():
-            egg.relative_x = min(self._model.settings["world_width"] - egg.width, egg.relative_x + egg.speed)
-            self._model.shift_enemies("left")
-        if self._view.pressing_down_key():
-            egg.relative_y = min(self._model.settings["world_height"] - egg.height, egg.relative_y + egg.speed)
-            self._model.shift_enemies("up")
-        if self._view.pressing_up_key():
-            egg.relative_y = max(0, egg.relative_y - egg.speed)
-            self._model.shift_enemies("down")
-
-        if self._view.pressing_attack_key():
-            self._model.attack()
-
-        self._model.update()
+        self._model.update(
+            self._view.pressing_left_key(),
+            self._view.pressing_right_key(),
+            self._view.pressing_up_key(),
+            self._view.pressing_down_key(),
+            self._view.pressing_attack_key()
+        )
 
 
     def draw(self):
