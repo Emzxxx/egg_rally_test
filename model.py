@@ -141,7 +141,7 @@ class GameModel:
 
         if (
             self.boss is None and
-            self.eggnemies_defeated >= self._settings["boss_spawn_threshhold"]
+            self.eggnemies_defeated >= 3
         ):
             self.boss = Boss(
                 random.randint(-150, self._settings["world_width"] + 150),
@@ -156,7 +156,6 @@ class GameModel:
         egg = self.egg
         
         if egg.hp <= 0 or self.game_over_win:
-            print("Game over you lost")
             return
 
         #TODO: Fix win condition
