@@ -75,7 +75,14 @@ class GameView:
             "You Win!",
             7
         )
-
+    
+    def draw_restart_option_message(self):
+        pyxel.text(
+            self._width // 2 - 20,
+            self._height // 2 + 30,
+            "Restart? [R]",
+            7
+        )
     #Key input functions
     def pressing_left_key(self):
         return pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A)

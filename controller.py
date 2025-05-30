@@ -38,3 +38,8 @@ class GameController:
 
         if self._model.game_over_win:
             self._view.draw_win_message()
+
+        if self._model.game_over_win or self._model.game_over_loss:
+            self._view.draw_restart_option_message()
+        
+

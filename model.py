@@ -97,7 +97,8 @@ class GameModel:
         self.i_frame: int = 0
         self.eggnemies_defeated: int = 0
         self.total_frames_passed: int = 0
-        self.game_over_win: bool = False
+        self._game_over_win: bool = False
+        self._game_over_loss: bool = False
 
     def is_in_collision(self, enemy: Eggnemy) -> bool:
         egg = self.egg
@@ -177,17 +178,18 @@ class GameModel:
             self.eggnemies.append(self.boss)
 
     def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool, pressing_restart: bool):
-        if pressing_restart and (self.game_over_win or self.egg.hp <= 0):
+        if pressing_restart and (self._game_over_win or self._game_over_loss):
             self.init_state()
 
         egg = self.egg
 
-        if egg.hp <= 0 or self.game_over_win:
+        if egg.hp <= 0:
+            self._game_over_loss = True
             return
 
         #TODO: Fix win condition
         if self.boss_has_spawned and self.boss is None:
-            self.game_over_win = True
+            self._game_over_win = True
             return
 
         if pressing_left:
@@ -220,6 +222,14 @@ class GameModel:
     @property
     def fps(self):
         return self._fps
+    
+    @property
+    def game_over_win(self):
+        return self._game_over_win
+    
+    @property
+    def game_over_loss(self):
+        return self._game_over_loss
 
     @property
     def export_egg(self):
