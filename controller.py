@@ -2,11 +2,6 @@ import pyxel
 from model import GameModel
 from view import GameView
 
-'''
-    TODO: 
-    - Boss Spawning Logic (Model)
-    - Win conditions (Model)
-'''
 class GameController:
     def __init__(self, model: GameModel, view: GameView):
         self._model = model
