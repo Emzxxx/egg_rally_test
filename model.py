@@ -1,12 +1,12 @@
 import random
-from abc import ABC
+# from abc import ABC 
 from typing import Literal, Any
 
 
 egg_range: int = 10
 
 
-class Egg(ABC):
+class Egg:
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         self.x = x
         self.y = y
@@ -16,7 +16,7 @@ class Egg(ABC):
         self.height = height
         self.max_hp = hp
         self.hp = hp
-        self.speed = 2
+        self._speed = 2
 
     @property
     def top(self) -> int:
@@ -33,20 +33,36 @@ class Egg(ABC):
     @property
     def right(self) -> int:
         return self.x + self.width
-
+    
+    @property
+    def speed(self) -> int:
+        return self._speed
 
 class Eggnemy(Egg):
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         super().__init__(x, y, width, height, hp)
-        self.speed = 1
-        self.dps = 1
+        self._speed = 1
+        self._dps = 1
+        self._is_boss: bool = False    
 
+    @property
+    def speed(self):
+        return self._speed
+    
+    @property
+    def dps(self):
+        return self._dps
+    
+    @property
+    def is_boss(self):
+        return self._is_boss
 
 class Boss(Eggnemy):
     def __init__(self, x: int, y: int, width: int, height: int, hp: int):
         super().__init__(x, y, width, height, hp)
-        self.speed = 1.5
-        self.dps = 3
+        self._speed = 1.5
+        self._dps = 3
+        self._is_boss: bool = True    
 
 
 class GameModel:
@@ -76,6 +92,8 @@ class GameModel:
             for _ in range(self._settings["eggnemy_count"])
         ]
         self.boss: Boss | None = None
+        self.boss_has_spawned: bool = False
+
         self.i_frame: int = 0
         self.eggnemies_defeated: int = 0
         self.total_frames_passed: int = 0
@@ -138,12 +156,15 @@ class GameModel:
             if self.is_in_range(enemy):
                 enemy.hp -= 1
                 if enemy.hp == 0:
+                    if enemy.is_boss:
+                        self.boss = None
                     self.eggnemies.remove(enemy)
                     self.eggnemies_defeated += 1
 
         if (
-            self.boss is None and
-            self.eggnemies_defeated >= 3
+            self.boss is None 
+            and self.eggnemies_defeated >= 3 
+            and not self.boss_has_spawned
         ):
             self.boss = Boss(
                 random.randint(-150, self._settings["world_width"] + 150),
@@ -152,19 +173,20 @@ class GameModel:
                 self._settings["boss_height"],
                 self._settings["boss_initial_hp"]
             )
+            self.boss_has_spawned = True
             self.eggnemies.append(self.boss)
 
     def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool, pressing_restart: bool):
         if pressing_restart and (self.game_over_win or self.egg.hp <= 0):
             self.init_state()
-            return  # optional: skip rest of frame
 
         egg = self.egg
 
         if egg.hp <= 0 or self.game_over_win:
             return
 
-        if len(self.eggnemies) == 0:
+        #TODO: Fix win condition
+        if self.boss_has_spawned and self.boss is None:
             self.game_over_win = True
             return
 
