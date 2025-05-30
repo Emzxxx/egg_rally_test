@@ -9,7 +9,7 @@ def main():
         settings: dict[str, Any] = json.load(f)
 
     model = GameModel(settings)
-    view = GameView(model.width, model.height, model.eggnemies_defeated, model.total_frames_passed, settings["fps"])
+    view = GameView(model.width, model.height)
     controller = GameController(model, view)
 
     controller.start()
