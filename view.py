@@ -4,12 +4,9 @@ from collections.abc import Sequence
 
 
 class GameView:
-    def __init__(self, width: int, height: int, eggnemies_defeated: int, total_frames_passed: int, fps: int):
+    def __init__(self, width: int, height: int):
         self._width = width
         self._height = height
-        self._fps = fps
-        self.eggnemies_defeated = eggnemies_defeated
-        self.total_frames_passed = total_frames_passed
 
     def start(self, fps: int, update_handler: UpdateHandler, draw_handler: DrawHandler):
         pyxel.init(
@@ -51,11 +48,11 @@ class GameView:
         for enemy in enemies:
             pyxel.rect(enemy.x, enemy.y, enemy.width, enemy.height, 8)
 
-    def draw_eggnemies_defeated(self):
-        pyxel.text(10, 10, f'{self.eggnemies_defeated}', 7)
+    def draw_eggnemies_defeated(self, eggnemies_defeated: int):
+        pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
 
-    def draw_time_passed(self):
-        seconds = self.total_frames_passed // self._fps
+    def draw_time_passed(self, total_frames_passed: int, fps: int):
+        seconds = total_frames_passed // fps
         minutes = seconds // 60
         seconds %= 60
         time_str = f"{minutes} : {seconds:02}"

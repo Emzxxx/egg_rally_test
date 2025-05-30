@@ -4,10 +4,6 @@ from view import GameView
 
 '''
     TODO: 
-    - Remove pyxel dependency from controller (Controller)
-    - Game Over [dead] Screen (View)
-    - Eggnemies Killed (View)
-    - Time Passed (View)
     - Boss Spawning Logic (Model)
     - Win conditions (Model)
 
@@ -23,6 +19,7 @@ class GameController:
         self._view.start(model.fps, self, self)
 
     def update(self):
+        #TODO: Should really just have this in model by definition of mvc
         egg = self._model.egg
 
         if egg.hp == 0 or self._model.game_over_win:
@@ -52,8 +49,8 @@ class GameController:
         self._view.draw_world_border(self._model.egg.relative_x, self._model.egg.relative_y)
         self._view.draw_egg(self._model.egg)
         self._view.draw_eggnemies(self._model.eggnemies)
-        self._view.draw_eggnemies_defeated()
-        self._view.draw_time_passed()
+        self._view.draw_eggnemies_defeated(self._model.eggnemies_defeated)
+        self._view.draw_time_passed(self._model.total_frames_passed, self._model.fps)
         self._view.draw_eggnemies_hp(self._model.eggnemies)
 
         if self._model.boss and self._model.boss.hp > 0:
