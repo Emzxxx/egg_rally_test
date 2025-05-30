@@ -152,7 +152,7 @@ class GameModel:
             )
             self.eggnemies.append(self.boss)
 
-    def tick(self):
+    def update(self):
         if self.egg.hp == 0:
             return
 

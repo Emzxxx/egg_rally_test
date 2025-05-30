@@ -19,6 +19,7 @@ class GameView:
         )
         pyxel.run(update_handler.update, draw_handler.draw)
 
+    #Drawing functions
     def draw_world_border(self, relative_x: int, relative_y: int):
         pyxel.rectb(
             self._width // 2 - relative_x,
@@ -77,3 +78,19 @@ class GameView:
             "You Win!",
             7
         )
+
+    #Key input functions
+    def pressing_left_key(self):
+        return pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A)
+    
+    def pressing_right_key(self):
+        return pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D)
+    
+    def pressing_down_key(self):
+        return pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S)
+    
+    def pressing_up_key(self):
+        return pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W)
+    
+    def pressing_attack_key(self):
+        return pyxel.btn(pyxel.KEY_L)

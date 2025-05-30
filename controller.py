@@ -2,54 +2,63 @@ import pyxel
 from model import GameModel
 from view import GameView
 
+'''
+    TODO: 
+    - Remove pyxel dependency from controller (Controller)
+    - Game Over [dead] Screen (View)
+    - Eggnemies Killed (View)
+    - Time Passed (View)
+    - Boss Spawning Logic (Model)
+    - Win conditions (Model)
 
+'''
 class GameController:
     def __init__(self, model: GameModel, view: GameView):
-        self.model = model
-        self.view = view
+        self._model = model
+        self._view = view
 
     def start(self):
-        model = self.model
+        model = self._model
 
-        self.view.start(model.fps, self, self)
+        self._view.start(model.fps, self, self)
 
     def update(self):
-        egg = self.model.egg
+        egg = self._model.egg
 
-        if egg.hp == 0 or self.model.game_over_win:
+        if egg.hp == 0 or self._model.game_over_win:
             return
 
-        if pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.KEY_A):
+        if self._view.pressing_left_key():
             egg.relative_x = max(0, egg.relative_x - egg.speed)
-            self.model.shift_enemies("right")
-        if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.KEY_D):
-            egg.relative_x = min(self.model.settings["world_width"] - egg.width, egg.relative_x + egg.speed)
-            self.model.shift_enemies("left")
-        if pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.KEY_S):
-            egg.relative_y = min(self.model.settings["world_height"] - egg.height, egg.relative_y + egg.speed)
-            self.model.shift_enemies("up")
-        if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.KEY_W):
+            self._model.shift_enemies("right")
+        if self._view.pressing_right_key():
+            egg.relative_x = min(self._model.settings["world_width"] - egg.width, egg.relative_x + egg.speed)
+            self._model.shift_enemies("left")
+        if self._view.pressing_down_key():
+            egg.relative_y = min(self._model.settings["world_height"] - egg.height, egg.relative_y + egg.speed)
+            self._model.shift_enemies("up")
+        if self._view.pressing_up_key():
             egg.relative_y = max(0, egg.relative_y - egg.speed)
-            self.model.shift_enemies("down")
+            self._model.shift_enemies("down")
 
-        if pyxel.btn(pyxel.KEY_L):
-            self.model.attack()
+        if self._view.pressing_attack_key():
+            self._model.attack()
 
-        self.model.tick()
+        self._model.update()
 
 
     def draw(self):
         pyxel.cls(0)
-        self.view.draw_world_border(self.model.egg.relative_x, self.model.egg.relative_y)
-        self.view.draw_egg(self.model.egg)
-        self.view.draw_eggnemies(self.model.eggnemies)
-        self.view.draw_eggnemies_defeated()
-        self.view.draw_time_passed()
-        self.view.draw_eggnemies_hp(self.model.eggnemies)
+        self._view.draw_world_border(self._model.egg.relative_x, self._model.egg.relative_y)
+        self._view.draw_egg(self._model.egg)
+        self._view.draw_eggnemies(self._model.eggnemies)
+        self._view.draw_eggnemies_defeated()
+        self._view.draw_time_passed()
+        self._view.draw_eggnemies_hp(self._model.eggnemies)
 
-        if self.model.boss and self.model.boss.hp > 0:
-            self.view.draw_boss(self.model.boss)
-            self.view.draw_boss_hp(self.model.boss)
+        if self._model.boss and self._model.boss.hp > 0:
+            self._view.draw_boss(self._model.boss)
+            self._view.draw_boss_hp(self._model.boss)
 
-        if self.model.game_over_win:
-            self.view.draw_win_message()
+        if self._model.game_over_win:
+            self._view.draw_win_message()
