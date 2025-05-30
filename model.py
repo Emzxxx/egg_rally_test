@@ -51,7 +51,7 @@ class Boss(Eggnemy):
 
 class GameModel:
     def __init__(self, settings: dict[str, Any]):
-        self.settings = settings
+        self._settings = settings
         self._width: int = settings["world_width"]
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
@@ -97,11 +97,11 @@ class GameModel:
 
     def shift_enemies(self, direction: Literal["left", "right", "up", "down"]):
         dx, dy = 0, 0
-        if direction == "left" and self.egg.relative_x + self.egg.width < self.settings["world_width"]:
+        if direction == "left" and self.egg.relative_x + self.egg.width < self._settings["world_width"]:
             dx = -self.egg.speed
         elif direction == "right" and self.egg.relative_x > 0:
             dx = self.egg.speed
-        elif direction == "up" and self.egg.relative_y + self.egg.height < self.settings["world_height"]:
+        elif direction == "up" and self.egg.relative_y + self.egg.height < self._settings["world_height"]:
             dy = -self.egg.speed
         elif direction == "down" and self.egg.relative_y > 0:
             dy = self.egg.speed
@@ -141,24 +141,43 @@ class GameModel:
 
         if (
             self.boss is None and
-            self.eggnemies_defeated >= self.settings["boss_spawn_threshhold"]
+            self.eggnemies_defeated >= 3
         ):
             self.boss = Boss(
-                random.randint(-150, self.settings["world_width"] + 150),
-                random.randint(-150, self.settings["world_height"] + 150),
-                self.settings["boss_width"],
-                self.settings["boss_height"],
-                self.settings["boss_initial_hp"]
+                random.randint(-150, self._settings["world_width"] + 150),
+                random.randint(-150, self._settings["world_height"] + 150),
+                self._settings["boss_width"],
+                self._settings["boss_height"],
+                self._settings["boss_initial_hp"]
             )
             self.eggnemies.append(self.boss)
 
-    def tick(self):
-        if self.egg.hp == 0:
+    def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool):
+        egg = self.egg
+        
+        if egg.hp <= 0 or self.game_over_win:
             return
 
+        #TODO: Fix win condition
         if len(self.eggnemies) == 0:
             self.game_over_win = True
             return
+
+        if pressing_left:
+            egg.relative_x = max(0, egg.relative_x - egg.speed)
+            self.shift_enemies("right")
+        if pressing_right:
+            egg.relative_x = min(self._settings["world_width"] - egg.width, egg.relative_x + egg.speed)
+            self.shift_enemies("left")
+        if pressing_down:
+            egg.relative_y = min(self._settings["world_height"] - egg.height, egg.relative_y + egg.speed)
+            self.shift_enemies("up")
+        if pressing_up:
+            egg.relative_y = max(0, egg.relative_y - egg.speed)
+            self.shift_enemies("down")
+
+        if pressing_attack:
+            self.attack()
 
         self.update_entities()
         self.total_frames_passed += 1
