@@ -23,7 +23,8 @@ class GameController:
             self._view.pressing_right_key(),
             self._view.pressing_up_key(),
             self._view.pressing_down_key(),
-            self._view.pressing_attack_key()
+            self._view.pressing_attack_key(),
+            self._view.pressing_restart_key()
         )
 
 

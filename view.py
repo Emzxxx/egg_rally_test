@@ -91,3 +91,6 @@ class GameView:
     
     def pressing_attack_key(self):
         return pyxel.btn(pyxel.KEY_L)
+    
+    def pressing_restart_key(self):
+        return pyxel.btn(pyxel.KEY_R)
