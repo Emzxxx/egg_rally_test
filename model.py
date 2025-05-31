@@ -7,7 +7,7 @@ egg_range: int = 10
 
 
 class Egg:
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         self.x = x
         self.y = y
         self.relative_x = x
@@ -19,27 +19,31 @@ class Egg:
         self._speed = 2
 
     @property
-    def top(self) -> int:
+    def top(self) -> float:
         return self.y
 
     @property
-    def bottom(self) -> int:
+    def bottom(self) -> float:
         return self.y + self.height
 
     @property
-    def left(self) -> int:
+    def left(self) -> float:
         return self.x
 
     @property
-    def right(self) -> int:
+    def right(self) -> float:
         return self.x + self.width
     
     @property
-    def speed(self) -> int:
+    def speed(self):
         return self._speed
+    
+    @property
+    def center(self) -> tuple[float, float]:
+        return (self.x + self.width / 2, self.y + self.height / 2)
 
 class Eggnemy(Egg):
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         super().__init__(x, y, width, height, hp)
         self._speed = 1
         self._dps = 1
@@ -58,7 +62,7 @@ class Eggnemy(Egg):
         return self._is_boss
 
 class Boss(Eggnemy):
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         super().__init__(x, y, width, height, hp)
         self._speed = 1.5
         self._dps = 3

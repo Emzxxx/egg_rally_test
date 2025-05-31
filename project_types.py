@@ -10,19 +10,19 @@ class DrawHandler(Protocol):
 
 class EggInfo(Protocol):
     @property
-    def x(self) -> int:
+    def x(self) -> float:
         ...
 
     @property
-    def y(self) -> int:
+    def y(self) -> float:
         ...
 
     @property
-    def width(self) -> int:
+    def width(self) -> float:
         ...
 
     @property
-    def height(self) -> int:
+    def height(self) -> float:
         ...
 
     @property
@@ -34,17 +34,20 @@ class EggInfo(Protocol):
         ...
 
     @property
-    def top(self) -> int:
+    def top(self) -> float:
         ...
 
     @property
-    def bottom(self) -> int:
+    def bottom(self) -> float:
         ...
 
     @property
-    def left(self) -> int:
+    def left(self) -> float:
         ...
 
     @property
-    def right(self) -> int:
+    def right(self) -> float:
         ...
+
+    @property
+    def center(self) -> tuple[float, float]
