@@ -22,7 +22,7 @@
     "eggnemy_initial_attack": 1,
     "eggnemy_initial_speed": 1,
 
-    "boss_spawn_threshhold": 4,
+    "boss_spawn_threshhold": 8,
     "boss_initial_hp": 20,
     "boss_width": 8,
     "boss_height": 10,
