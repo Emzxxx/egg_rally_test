@@ -52,7 +52,7 @@ class Eggnemy(Egg):
         self._is_boss: bool = False    
 
     @property
-    def speed(self):
+    def speed(self) -> int:
         return self._speed
     
     @property

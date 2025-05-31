@@ -58,5 +58,9 @@ class EggInfo(Protocol):
         ...
 
     @property
+    def speed(self) -> int:
+        ...
+
+    @property
     def eggxperience(self) -> int:
         ...
