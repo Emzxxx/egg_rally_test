@@ -52,3 +52,15 @@ class EggInfo(Protocol):
     @property
     def center(self) -> tuple[float, float]:
         ...
+
+    @property
+    def attack_stat(self) -> int:
+        ...
+
+    @property
+    def speed(self) -> int:
+        ...
+
+    @property
+    def eggxperience(self) -> int:
+        ...
