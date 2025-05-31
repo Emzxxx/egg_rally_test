@@ -11,17 +11,30 @@ settings: dict[str, Any] = {
     "screen_width": 1024,
     "screen_height": 1024,
     "egg_initial_hp": 10,
+    "egg_initial_attack": 1,
+    "egg_initial_speed": 2,
+    "egghancement_threshhold": 3,
+    "hp_incr": 5,
+    "attack_incr": 1,
+    "speed_incr": 1,
     "egg_width": 8,
     "egg_height": 10,
+
     "eggnemy_initial_hp": 2,
     "eggnemy_count": 10,
     "eggnemy_width": 8,
     "eggnemy_height": 10,
+    "eggnemy_initial_attack": 1,
+    "eggnemy_initial_speed": 2,
+
     "boss_spawn_threshhold": 10,
     "boss_initial_hp": 20,
     "boss_width": 8,
-    "boss_height": 10
-}
+    "boss_height": 10,
+    "boss_initial_attack": 1,
+    "boss_initial_speed": 2
+
+  }
 
 def test_initial_game_state():
     model = GameModel(settings)

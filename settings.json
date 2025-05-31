@@ -13,12 +13,19 @@
     "speed_incr": 1,
     "egg_width": 8,
     "egg_height": 10,
+
     "eggnemy_initial_hp": 2,
     "eggnemy_count": 10,
     "eggnemy_width": 8,
     "eggnemy_height": 10,
+    "eggnemy_initial_attack": 1,
+    "eggnemy_initial_speed": 2,
+
     "boss_spawn_threshhold": 10,
     "boss_initial_hp": 20,
     "boss_width": 8,
-    "boss_height": 10
+    "boss_height": 10,
+    "boss_initial_attack": 1,
+    "boss_initial_speed": 2
+
   }

@@ -22,12 +22,15 @@ class Egg:
         self.height = height
         self.max_hp = hp
         self.hp = hp
-        self.attack_stat = initial_attack
+        self._attack_stat = initial_attack
         self._speed = initial_speed
         self.eggxperience = 0
 
     def set_speed(self, new_speed: int):
         self._speed = new_speed
+
+    def set_attack(self, new_attack: int):
+        self._attack_stat = new_attack
 
     @property
     def top(self) -> float:
@@ -49,6 +52,10 @@ class Egg:
     def speed(self):
         return self._speed
     
+    @property
+    def attack_stat(self):
+        return self._attack_stat
+
     @property
     def center(self) -> tuple[float, float]:
         return (self.x + self.width / 2, self.y + self.height / 2)
@@ -119,8 +126,9 @@ class GameModel:
                     y,
                     self._settings["eggnemy_width"],
                     self._settings["eggnemy_height"],
-                    self._settings["eggnemy_initial_hp"]
-                    self._settings
+                    self._settings["eggnemy_initial_hp"],
+                    self._settings["eggnemy_initial_attack"],
+                    self._settings["eggnemy_initial_speed"]
                 )
                 if new_enemy.center not in occupied_centers:
                     self.eggnemies.append(new_enemy)
@@ -233,7 +241,7 @@ class GameModel:
 
         if (
             self.boss is None 
-            and self.eggnemies_defeated >= 3 
+            and self.eggnemies_defeated >= self._settings["boss_spawn_threshhold"]
             and not self.boss_has_spawned
         ):
             while True:
@@ -243,7 +251,9 @@ class GameModel:
                     x, y,
                     self._settings["boss_width"],
                     self._settings["boss_height"],
-                    self._settings["boss_initial_hp"]
+                    self._settings["boss_initial_hp"],
+                    self._settings["boss_initial_attack"],
+                    self._settings["boss_initial_speed"]
                 )
                 if all(new_boss.center != e.center for e in self.eggnemies):
                     self.boss = new_boss
@@ -298,7 +308,7 @@ class GameModel:
             self.egg.max_hp += 5
             self.egg.hp += 5
         elif choice == 2:
-            self.egg.attack_stat += 1
+            self.egg.set_attack(self.egg.attack_stat + 1)
         elif choice == 3:
             self.egg.set_speed(self.egg.speed + 1)
 
