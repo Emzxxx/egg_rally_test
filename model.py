@@ -16,7 +16,9 @@ class Egg:
         self.height = height
         self.max_hp = hp
         self.hp = hp
+        self.attack = 1
         self._speed = 2
+        self.eggxperience = 0
 
     @property
     def top(self) -> float:
@@ -202,12 +204,13 @@ class GameModel:
     def attack(self):
         for enemy in self.eggnemies[:]:
             if self.is_in_range(enemy):
-                enemy.hp -= 1
+                enemy.hp -= self.egg.attack
                 if enemy.hp == 0:
                     if enemy.is_boss:
                         self.boss = None
                     self.eggnemies.remove(enemy)
                     self.eggnemies_defeated += 1
+                    self.egg.eggxperience += 1
 
         if (
             self.boss is None 
