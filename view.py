@@ -52,9 +52,16 @@ class GameView:
         pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
 
     def draw_egg_stats(self, egg: EggInfo):
-        pyxel.text(10, 20, f"ATK: {egg.attack_stat}", 7)
-        pyxel.text(10, 30, f"SPD: {egg.speed}", 7)
-        pyxel.text(10, 40, f"EXP: {egg.eggxperience}", 7)
+        pyxel.text(self._width - 50, self._height - 40, f"Atk: {egg.attack_stat}", 7)
+        pyxel.text(self._width - 50, self._height - 30, f"Spd: {egg.speed}", 7)
+        pyxel.text(self._width - 50, self._height - 20, f"Exp: {egg.eggxperience}", 7)
+
+    def draw_egghancement_prompt(self):
+        pyxel.rect(self._width // 4, self._height // 2 - 50, 120, 45, 0)
+        pyxel.rectb(self._width // 4, self._height // 2 - 50, 120, 45, 7)
+        pyxel.text(self._width // 4 + 10, self._height // 2 - 40, "[1] Increase max HP by 5", 7)
+        pyxel.text(self._width // 4 + 10, self._height // 2 - 30, "[2] Increase attack by 1", 7)
+        pyxel.text(self._width // 4 + 10, self._height // 2 - 20, "[3] Increase speed by 1", 7)
 
     def draw_time_passed(self, total_frames_passed: int, fps: int):
         pyxel.text(self._width - 40, 10, self.convert_frame_to_time(total_frames_passed, fps), 7)
@@ -118,3 +125,12 @@ class GameView:
     
     def pressing_restart_key(self):
         return pyxel.btn(pyxel.KEY_R)
+    
+    def pressing_key_1(self): 
+        return pyxel.btn(pyxel.KEY_1)
+    
+    def pressing_key_2(self): 
+        return pyxel.btn(pyxel.KEY_2)
+    
+    def pressing_key_3(self): 
+        return pyxel.btn(pyxel.KEY_3)
