@@ -49,10 +49,7 @@ class GameController:
         if self._model.waiting_for_egghancement:
             self._view.draw_egghancement_prompt()
 
-        if self._model.game_over_win:
-            self._view.draw_win_message()
-
-        if self._model.game_over_win or self._model.game_over_loss:
+        if self._model.game_over_loss:
             self._view.draw_restart_option_message()
         
 

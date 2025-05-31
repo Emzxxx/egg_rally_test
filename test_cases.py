@@ -1,59 +1,27 @@
 from model import GameModel, Eggnemy, Boss
 from typing import Any
+import json
 
 #Unit Testing
 
-#Settings locally defined for tests
-settings: dict[str, Any] = {
-    "fps": 30,
-    "world_width": 256,
-    "world_height": 256,
-    "screen_width": 1024,
-    "screen_height": 1024,
-    "egg_initial_hp": 10,
-    "egg_initial_attack": 1,
-    "egg_initial_speed": 2,
-    "egghancement_threshhold": 3,
-    "hp_incr": 5,
-    "attack_incr": 1,
-    "speed_incr": 1,
-    "egg_width": 8,
-    "egg_height": 10,
-
-    "eggnemy_initial_hp": 2,
-    "eggnemy_count": 10,
-    "eggnemy_width": 8,
-    "eggnemy_height": 10,
-    "eggnemy_initial_attack": 1,
-    "eggnemy_initial_speed": 2,
-
-    "boss_spawn_threshhold": 10,
-    "boss_initial_hp": 20,
-    "boss_width": 8,
-    "boss_height": 10,
-    "boss_initial_attack": 1,
-    "boss_initial_speed": 2
-
-  }
+#Import settings for tests
+with open("settings.json") as f:
+    settings: dict[str, Any] = json.load(f)
 
 def test_initial_game_state():
     model = GameModel(settings)
 
     assert model.boss is None
-    assert model.boss_has_spawned == False
     assert model.eggnemies_defeated == 0
     assert model.total_frames_passed == 0
-    assert model.game_over_win == False
     assert model.game_over_loss == False
     assert len(model.eggnemies) == settings["eggnemy_count"]
     assert len(model.leaderboard) == 0
 
     model.init_state()
     assert model.boss is None
-    assert model.boss_has_spawned == False
     assert model.eggnemies_defeated == 0
     assert model.total_frames_passed == 0
-    assert model.game_over_win == False
     assert model.game_over_loss == False
     assert len(model.eggnemies) == settings["eggnemy_count"]
 
@@ -78,23 +46,19 @@ def test_boss_spawning_conditions():
 
     model.eggnemies_defeated = 3
     model.attack() 
-    assert model.boss_has_spawned == False
     assert model.boss is None
 
     model.attack() 
     model.eggnemies_defeated = 6
-    assert model.boss_has_spawned == False
     assert model.boss is None
 
     model.eggnemies_defeated = 7
     #To access the if condition detailing the boss spawning conditions [You need to attack to kill and need to kill to spawn boss]
     model.attack() 
-    assert model.boss_has_spawned == True
     assert model.boss is not None
 
     model.eggnemies_defeated = 10
     model.attack() 
-    assert model.boss_has_spawned == True
     assert model.boss is not None
 
 
@@ -107,30 +71,22 @@ def test_win_condition_simple():
 
     #Newly created
     assert model.boss is None
-    assert model.game_over_win == False
     model.update(False, False, False, False, False, False)
-    assert model.game_over_win == False
 
     #Boss "Exists" for example; Boss just spawned
     model.boss = Boss(0,0,1,1,5,0,0)
-    model.boss_has_spawned = True
     assert model.boss is not None
-    assert model.game_over_win == False
     model.update(False, False, False, False, False, False)
-    assert model.game_over_win == False
 
     #Boss is damaged but not dead
     model.boss.hp = 1
     model.update(False, False, False, False, False, False)
     assert model.boss is not None
-    assert model.game_over_win == False
     model.update(False, False, False, False, False, False)
-    assert model.game_over_win == False
 
     #Boss is dead and is back to being None
     model.boss = None
     model.update(False, False, False, False, False, False)
-    assert model.game_over_win == True
 
 
 def test_loss_condition_simple():
