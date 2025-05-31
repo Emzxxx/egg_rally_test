@@ -7,8 +7,6 @@ egg_range: int = 10
 
 '''
     TODO: 
-    - Too high attack just makes the enemies have negative health
-    - Boss goes back into a normal enemy when health goes negative??
     - Egghancements doesn't work after a restart
 
 '''
@@ -102,14 +100,14 @@ class GameModel:
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
         self.leaderboard: list[int] = []
-        self.waiting_for_egghancement = False
-        self.init_state()
 
-        self.hp_inct = settings["hp_incr"]
+        self.waiting_for_egghancement = False
+        self.hp_incr = settings["hp_incr"]
         self.attack_incr = settings["attack_incr"]
         self.speed_incr = settings["speed_incr"]
         self.egghancement_threshhold = settings["egghancement_threshhold"]
-        self.next_egghancement_at = self.egghancement_threshhold
+        
+        self.init_state()
 
     def init_state(self):
         self.egg: Egg = Egg(
@@ -148,6 +146,8 @@ class GameModel:
 
         self.i_frame: int = 0
         self.eggnemies_defeated: int = 0
+        self.next_egghancement_at = self.egghancement_threshhold
+
         self.total_frames_passed: int = 0
         self._game_over_win: bool = False
         self._game_over_loss: bool = False
@@ -313,12 +313,12 @@ class GameModel:
     
     def apply_egghancement(self, choice: int):
         if choice == 1:
-            self.egg.max_hp += 5
-            self.egg.hp += 5
+            self.egg.max_hp += self.hp_incr
+            self.egg.hp += self.hp_incr
         elif choice == 2:
-            self.egg.set_attack(self.egg.attack_stat + 1)
+            self.egg.set_attack(self.egg.attack_stat + self.attack_incr)
         elif choice == 3:
-            self.egg.set_speed(self.egg.speed + 1)
+            self.egg.set_speed(self.egg.speed + self.speed_incr)
 
         self.waiting_for_egghancement = False
         self.next_egghancement_at += self.egghancement_threshhold
