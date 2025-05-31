@@ -189,6 +189,7 @@ class GameModel:
         if pressing_restart and (self._game_over_win or self._game_over_loss):
             self.add_to_leaderboard(self.total_frames_passed)
             self.init_state()
+            return
 
         egg = self.egg
 
