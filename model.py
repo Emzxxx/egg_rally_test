@@ -7,7 +7,13 @@ egg_range: int = 10
 
 
 class Egg:
-    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
+    def __init__(self, x: float, 
+                 y: float, 
+                 width: float, 
+                 height: float, 
+                 hp: int,
+                 initial_attack: int,
+                 initial_speed: int):
         self.x = x
         self.y = y
         self.relative_x = x
@@ -16,11 +22,9 @@ class Egg:
         self.height = height
         self.max_hp = hp
         self.hp = hp
-        self.attack_stat = 1
-        self._speed = 2
+        self.attack_stat = initial_attack
+        self._speed = initial_speed
         self.eggxperience = 0
-        self.egghancement_threshhold = 3
-        self.next_egghancement_at = self.egghancement_threshhold
 
     def set_speed(self, new_speed: int):
         self._speed = new_speed
@@ -50,8 +54,8 @@ class Egg:
         return (self.x + self.width / 2, self.y + self.height / 2)
 
 class Eggnemy(Egg):
-    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
-        super().__init__(x, y, width, height, hp)
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
+        super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
         self._speed = 1
         self._dps = 1
         self._is_boss: bool = False    
@@ -69,8 +73,8 @@ class Eggnemy(Egg):
         return self._is_boss
 
 class Boss(Eggnemy):
-    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
-        super().__init__(x, y, width, height, hp)
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
+        super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
         self._speed = 1.5
         self._dps = 3
         self._is_boss: bool = True    
@@ -86,13 +90,21 @@ class GameModel:
         self.waiting_for_egghancement = False
         self.init_state()
 
+        self.hp_inct = settings["hp_incr"]
+        self.attack_incr = settings["attack_incr"]
+        self.speed_incr = settings["speed_incr"]
+        self.egghancement_threshhold = settings["egghancement_threshhold"]
+        self.next_egghancement_at = self.egghancement_threshhold
+
     def init_state(self):
         self.egg: Egg = Egg(
             self._settings["world_width"] // 2,
             self._settings["world_height"] // 2,
             self._settings["egg_width"],
             self._settings["egg_height"],
-            self._settings["egg_initial_hp"]
+            self._settings["egg_initial_hp"],
+            self._settings["egg_initial_attack"],
+            self._settings["egg_initial_speed"],
         )
 
         self.eggnemies: list[Eggnemy] = []
@@ -108,6 +120,7 @@ class GameModel:
                     self._settings["eggnemy_width"],
                     self._settings["eggnemy_height"],
                     self._settings["eggnemy_initial_hp"]
+                    self._settings
                 )
                 if new_enemy.center not in occupied_centers:
                     self.eggnemies.append(new_enemy)
@@ -271,7 +284,7 @@ class GameModel:
         if pressing_attack:
             self.attack()
 
-        if self.egg.eggxperience >= self.egg.next_egghancement_at:
+        if self.egg.eggxperience >= self.next_egghancement_at:
             self.waiting_for_egghancement = True
 
         if self.waiting_for_egghancement:
@@ -290,7 +303,7 @@ class GameModel:
             self.egg.set_speed(self.egg.speed + 1)
 
         self.waiting_for_egghancement = False
-        self.egg.next_egghancement_at += self.egg.egghancement_threshhold
+        self.next_egghancement_at += self.egghancement_threshhold
 
     @property
     def width(self):
