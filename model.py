@@ -133,7 +133,6 @@ class GameModel:
 
         self.bosses: list[Boss] = []
         self.bosses_spawned: int = 0
-        self.eggnemies: list[Eggnemy] = self.normal_eggnemies + self.bosses
         
 
 
