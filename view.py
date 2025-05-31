@@ -17,7 +17,7 @@ class GameView:
         pyxel.run(update_handler.update, draw_handler.draw)
 
     #Drawing functions
-    def draw_world_border(self, relative_x: int, relative_y: int):
+    def draw_world_border(self, relative_x: float, relative_y: float):
         pyxel.rectb(
             self._width // 2 - relative_x,
             self._height // 2 - relative_y,

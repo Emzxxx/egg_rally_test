@@ -7,7 +7,7 @@ egg_range: int = 10
 
 
 class Egg:
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         self.x = x
         self.y = y
         self.relative_x = x
@@ -19,27 +19,31 @@ class Egg:
         self._speed = 2
 
     @property
-    def top(self) -> int:
+    def top(self) -> float:
         return self.y
 
     @property
-    def bottom(self) -> int:
+    def bottom(self) -> float:
         return self.y + self.height
 
     @property
-    def left(self) -> int:
+    def left(self) -> float:
         return self.x
 
     @property
-    def right(self) -> int:
+    def right(self) -> float:
         return self.x + self.width
     
     @property
-    def speed(self) -> int:
+    def speed(self):
         return self._speed
+    
+    @property
+    def center(self) -> tuple[float, float]:
+        return (self.x + self.width / 2, self.y + self.height / 2)
 
 class Eggnemy(Egg):
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         super().__init__(x, y, width, height, hp)
         self._speed = 1
         self._dps = 1
@@ -58,7 +62,7 @@ class Eggnemy(Egg):
         return self._is_boss
 
 class Boss(Eggnemy):
-    def __init__(self, x: int, y: int, width: int, height: int, hp: int):
+    def __init__(self, x: float, y: float, width: float, height: float, hp: int):
         super().__init__(x, y, width, height, hp)
         self._speed = 1.5
         self._dps = 3
@@ -82,16 +86,26 @@ class GameModel:
             self._settings["egg_height"],
             self._settings["egg_initial_hp"]
         )
-        self.eggnemies: list[Eggnemy] = [
-            Eggnemy(
-                random.randint(-150, self._settings["world_width"] + 150),
-                random.randint(-150, self._settings["world_height"] + 150),
-                self._settings["eggnemy_width"],
-                self._settings["eggnemy_height"],
-                self._settings["eggnemy_initial_hp"]
-            )
-            for _ in range(self._settings["eggnemy_count"])
-        ]
+
+        self.eggnemies: list[Eggnemy] = []
+        occupied_centers: set[tuple[float, float]] = set()
+
+        for _ in range(self._settings["eggnemy_count"]):
+            while True:
+                x = random.randint(-150, self._width + 150)
+                y = random.randint(-150, self._height + 150)
+                new_enemy = Eggnemy(
+                    x,
+                    y,
+                    self._settings["eggnemy_width"],
+                    self._settings["eggnemy_height"],
+                    self._settings["eggnemy_initial_hp"]
+                )
+                if new_enemy.center not in occupied_centers:
+                    self.eggnemies.append(new_enemy)
+                    occupied_centers.add(new_enemy.center)
+                    break
+
         self.boss: Boss | None = None
         self.boss_has_spawned: bool = False
 
@@ -140,15 +154,40 @@ class GameModel:
             self.leaderboard.pop()
 
     def update_entities(self):
+        current_centers = {enemy.center for enemy in self.eggnemies}
+
+        new_centers: set[tuple[float, float]] = set()
+
         for enemy in self.eggnemies:
+            # Keep old center in case a move is rejected
+            old_center = enemy.center
+            dx = 0
+            dy = 0
+
             if enemy.x < self.egg.x:
-                enemy.x += enemy.speed
+                dx = enemy.speed
             elif enemy.x > self.egg.x:
-                enemy.x -= enemy.speed
+                dx = -enemy.speed
+
             if enemy.y < self.egg.y:
-                enemy.y += enemy.speed
+                dy = enemy.speed
             elif enemy.y > self.egg.y:
-                enemy.y -= enemy.speed
+                dy = -enemy.speed
+
+            new_x = enemy.x + dx
+            new_y = enemy.y + dy
+
+            # Compute the new center
+            temp_center = (new_x + enemy.width / 2, new_y + enemy.height / 2)
+
+            # Only apply move if no eggnemy has the new center
+            if temp_center not in current_centers and temp_center not in new_centers:
+                enemy.x = new_x
+                enemy.y = new_y
+                new_centers.add(temp_center)
+            else:
+                # Keep old center
+                new_centers.add(old_center)
 
         if self.i_frame == 0:
             for enemy in self.eggnemies:
@@ -175,20 +214,26 @@ class GameModel:
             and self.eggnemies_defeated >= 3 
             and not self.boss_has_spawned
         ):
-            self.boss = Boss(
-                random.randint(-150, self._settings["world_width"] + 150),
-                random.randint(-150, self._settings["world_height"] + 150),
-                self._settings["boss_width"],
-                self._settings["boss_height"],
-                self._settings["boss_initial_hp"]
-            )
-            self.boss_has_spawned = True
-            self.eggnemies.append(self.boss)
+            while True:
+                x = random.randint(-150, self._width + 150)
+                y = random.randint(-150, self._height + 150)
+                new_boss = Boss(
+                    x, y,
+                    self._settings["boss_width"],
+                    self._settings["boss_height"],
+                    self._settings["boss_initial_hp"]
+                )
+                if all(new_boss.center != e.center for e in self.eggnemies):
+                    self.boss = new_boss
+                    self.eggnemies.append(new_boss)
+                    self.boss_has_spawned = True
+                    break
 
     def update(self, pressing_left: bool, pressing_right: bool, pressing_up: bool, pressing_down: bool, pressing_attack: bool, pressing_restart: bool):
         if pressing_restart and (self._game_over_win or self._game_over_loss):
             self.add_to_leaderboard(self.total_frames_passed)
             self.init_state()
+            return
 
         egg = self.egg
 
