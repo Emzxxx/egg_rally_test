@@ -27,6 +27,7 @@ class GameController:
         pyxel.cls(0)
         self._view.draw_world_border(self._model.egg.relative_x, self._model.egg.relative_y)
         self._view.draw_egg(self._model.egg)
+        self._view.draw_egg_stats(self._model.egg)
         self._view.draw_eggnemies(self._model.eggnemies)
         self._view.draw_eggnemies_defeated(self._model.eggnemies_defeated)
         self._view.draw_time_passed(self._model.total_frames_passed, self._model.fps)

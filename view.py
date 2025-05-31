@@ -51,6 +51,11 @@ class GameView:
     def draw_eggnemies_defeated(self, eggnemies_defeated: int):
         pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
 
+    def draw_egg_stats(self, egg: EggInfo):
+        pyxel.text(10, 20, f"ATK: {egg.attack_stat}", 7)
+        pyxel.text(10, 30, f"SPD: {egg.speed}", 7)
+        pyxel.text(10, 40, f"EXP: {egg.eggxperience}", 7)
+
     def draw_time_passed(self, total_frames_passed: int, fps: int):
         pyxel.text(self._width - 40, 10, self.convert_frame_to_time(total_frames_passed, fps), 7)
 
@@ -63,7 +68,6 @@ class GameView:
         while score_ctr < 3:
             pyxel.text(40, self._height - (40 - 10*score_ctr), "--:--", 7)
             score_ctr += 1
-        
 
     def convert_frame_to_time(self, frame_count: int, fps: int):
         seconds = frame_count // fps
