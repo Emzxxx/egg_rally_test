@@ -86,16 +86,26 @@ class GameModel:
             self._settings["egg_height"],
             self._settings["egg_initial_hp"]
         )
-        self.eggnemies: list[Eggnemy] = [
-            Eggnemy(
-                random.randint(-150, self._settings["world_width"] + 150),
-                random.randint(-150, self._settings["world_height"] + 150),
-                self._settings["eggnemy_width"],
-                self._settings["eggnemy_height"],
-                self._settings["eggnemy_initial_hp"]
-            )
-            for _ in range(self._settings["eggnemy_count"])
-        ]
+
+        self.eggnemies: list[Eggnemy] = []
+        occupied_centers: set[tuple[float, float]] = set()
+
+        for _ in range(self._settings["eggnemy_count"]):
+            while True:
+                x = random.randint(-150, self._width + 150)
+                y = random.randint(-150, self._height + 150)
+                new_enemy = Eggnemy(
+                    x,
+                    y,
+                    self._settings["eggnemy_width"],
+                    self._settings["eggnemy_height"],
+                    self._settings["eggnemy_initial_hp"]
+                )
+                if new_enemy.center not in occupied_centers:
+                    self.eggnemies.append(new_enemy)
+                    occupied_centers.add(new_enemy.center)
+                    break
+
         self.boss: Boss | None = None
         self.boss_has_spawned: bool = False
 

@@ -50,4 +50,5 @@ class EggInfo(Protocol):
         ...
 
     @property
-    def center(self) -> tuple[float, float]
+    def center(self) -> tuple[float, float]:
+        ...
