@@ -5,6 +5,14 @@ from typing import Literal, Any
 
 egg_range: int = 10
 
+'''
+    TODO: 
+    - Too high attack just makes the enemies have negative health
+    - Boss goes back into a normal enemy when health goes negative??
+    - Egghancements doesn't work after a restart
+
+'''
+
 
 class Egg:
     def __init__(self, x: float, 
@@ -232,7 +240,7 @@ class GameModel:
         for enemy in self.eggnemies[:]:
             if self.is_in_range(enemy):
                 enemy.hp -= self.egg.attack_stat
-                if enemy.hp == 0:
+                if enemy.hp <= 0:
                     if enemy.is_boss:
                         self.boss = None
                     self.eggnemies.remove(enemy)
