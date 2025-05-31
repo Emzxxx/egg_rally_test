@@ -19,6 +19,11 @@ class Egg:
         self.attack_stat = 1
         self._speed = 2
         self.eggxperience = 0
+        self.egghancement_threshhold = 3
+        self.next_egghancement_at = self.egghancement_threshhold
+
+    def set_speed(self, new_speed: int):
+        self._speed = new_speed
 
     @property
     def top(self) -> float:
@@ -78,6 +83,7 @@ class GameModel:
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
         self.leaderboard: list[int] = []
+        self.waiting_for_egghancement = False
         self.init_state()
 
     def init_state(self):
@@ -265,9 +271,27 @@ class GameModel:
         if pressing_attack:
             self.attack()
 
+        if self.egg.eggxperience >= self.egg.next_egghancement_at:
+            self.waiting_for_egghancement = True
+
+        if self.waiting_for_egghancement:
+            return
+
         self.update_entities()
         self.total_frames_passed += 1
     
+    def apply_egghancement(self, choice: int):
+        if choice == 1:
+            self.egg.max_hp += 5
+            self.egg.hp += 5
+        elif choice == 2:
+            self.egg.attack_stat += 1
+        elif choice == 3:
+            self.egg.set_speed(self.egg.speed + 1)
+
+        self.waiting_for_egghancement = False
+        self.egg.next_egghancement_at += self.egg.egghancement_threshhold
+
     @property
     def width(self):
         return self._width
