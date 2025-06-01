@@ -1,95 +1,19 @@
 import random
 from typing import Literal, Any
-
-'''
-    TODO: 
-    - Bunch of scattered TODO's here
-    - Protocol the Egg and Eggnemy and Boss to allow more flexible possibility of OCP
-    - Create helper classes and functions described in the TODO's to more affirm SRP
-
-'''
-class Egg:
-    def __init__(self, x: float, 
-                 y: float, 
-                 width: float, 
-                 height: float, 
-                 hp: int,
-                 initial_attack: int,
-                 initial_speed: int):
-        self.x = x
-        self.y = y
-        self.relative_x = x
-        self.relative_y = y
-        self.width = width
-        self.height = height
-        self.max_hp = hp
-        self.hp = hp
-        self._attack_stat = initial_attack
-        self._speed = initial_speed
-        self.eggxperience = 0
-
-    def set_speed(self, new_speed: int):
-        self._speed = new_speed
-
-    def set_attack(self, new_attack: int):
-        self._attack_stat = new_attack
-
-    @property
-    def top(self) -> float:
-        return self.y
-
-    @property
-    def bottom(self) -> float:
-        return self.y + self.height
-
-    @property
-    def left(self) -> float:
-        return self.x
-
-    @property
-    def right(self) -> float:
-        return self.x + self.width
-    
-    @property
-    def speed(self):
-        return self._speed
-    
-    @property
-    def attack_stat(self):
-        return self._attack_stat
-
-    @property
-    def center(self) -> tuple[float, float]:
-        return (self.x + self.width / 2, self.y + self.height / 2)
-
-class Eggnemy(Egg):
-    def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
-        super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
-        self._is_boss: bool = False    
-
-    @property
-    def speed(self) -> int:
-        return self._speed
-    
-    @property
-    def is_boss(self):
-        return self._is_boss
-
-class Boss(Eggnemy):
-    def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
-        super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
-        self._is_boss: bool = True    
+from project_types import Egg, Eggnemy_Template, Eggnemy_Spawner_Interface, Boss_Spawner_Interface
 
 
 class GameModel:
-    def __init__(self, settings: dict[str, Any]):
+    def __init__(self, settings: dict[str, Any], eggnemy_spawner : Eggnemy_Spawner_Interface, boss_spawner: Boss_Spawner_Interface):
         self._settings = settings
         self._width: int = settings["world_width"]
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
         self._egg_range: int = 10
-        self.leaderboard: list[int] = []
-        
+        self._leaderboard: list[int] = []
+        self._eggnemy_spawner = eggnemy_spawner
+        self._boss_spawner = boss_spawner
+
         self._just_defeated_boss = False
         self._just_unlocked_egghancement = False
         self._just_died = False
@@ -104,14 +28,13 @@ class GameModel:
         self.eggnemy_attack_incr = settings["eggnemy_wave_increment_attack"]
         self.eggnemy_speed_incr = settings["eggnemy_wave_increment_speed"]
         
+        
         self.boss_hp_incr = settings["boss_wave_increment_hp"]
         self.boss_attack_incr = settings["boss_wave_increment_attack"]
         self.boss_speed_incr = settings["boss_wave_increment_speed"]
 
         self.invalid_enemy_x_spawn: list[int] = [_ for _ in range(self.width//2-12, self.width//2+self._settings["egg_width"]+13)]
         self.invalid_enemy_y_spawn: list[int] = [_ for _ in range(self.height//2-12, self.height//2+self._settings["egg_height"]+13)]
-
-        
 
         self.init_state()
 
@@ -134,10 +57,10 @@ class GameModel:
             self._settings["egg_initial_attack"],
             self._settings["egg_initial_speed"],
         )
-        self.normal_eggnemies: list[Eggnemy] = []
+        self.normal_eggnemies: list[Eggnemy_Template] = []
         self.spawn_enemies()
 
-        self.bosses: list[Boss] = []
+        self.bosses: list[Eggnemy_Template] = []
         self.bosses_spawned: int = 0
         
     def valid_enemy_spawn_x(self):
@@ -159,7 +82,7 @@ class GameModel:
             while True:
                 x = self.valid_enemy_spawn_x()
                 y = self.valid_enemy_spawn_y()
-                new_enemy = Eggnemy(
+                new_enemy = self._eggnemy_spawner.spawn_eggnemy(
                     x,
                     y,
                     self._settings["eggnemy_width"],
@@ -176,7 +99,7 @@ class GameModel:
     def next_wave(self):
         self._wave += 1
 
-    def is_in_collision(self, enemy: Eggnemy) -> bool:
+    def is_in_collision(self, enemy: Eggnemy_Template) -> bool:
         egg = self.egg
         if egg.right < enemy.left or egg.left > enemy.right:
             return False
@@ -184,7 +107,7 @@ class GameModel:
             return False
         return True
 
-    def is_in_range(self, enemy: Eggnemy) -> bool:
+    def is_in_range(self, enemy: Eggnemy_Template) -> bool:
         egg = self.egg
         if enemy.left - egg.right > self.egg_range or egg.left - enemy.right > self.egg_range:
             return False
@@ -208,7 +131,6 @@ class GameModel:
             enemy.y += dy
 
     def add_to_leaderboard(self, new_score_in_frames: int):
-        #Pretty lazy way of doing it
         self.leaderboard.append(new_score_in_frames)
         self.leaderboard.sort(reverse=True)
         if len(self.leaderboard) > 3:
@@ -219,7 +141,6 @@ class GameModel:
 
         new_centers: set[tuple[float, float]] = set()
 
-        #TODO: define a new helper function called, update_enemy_movements()
         for enemy in self.current_total_eggnemies:
             # Keep old center in case a move is rejected
             old_center = enemy.center
@@ -251,7 +172,6 @@ class GameModel:
                 # Keep old center
                 new_centers.add(old_center)
 
-        #TODO: define a new helper function called: update_enemy_damage_attempt()
         if self.i_frame == 0:
             for enemy in self.current_total_eggnemies:
                 if self.is_in_collision(enemy):
@@ -272,7 +192,7 @@ class GameModel:
                     self.eggnemies_defeated += 1
                     self.egg.eggxperience += 1
                     self.can_spawn_boss = True
-                #Can only spawn a boss after killing something
+                    #Can only spawn a boss after killing something
 
         #Boss type enemies (separated since normals and bosses have different extra conditions)
         for boss in self.bosses:
@@ -286,12 +206,10 @@ class GameModel:
                     self.eggnemies_defeated += 1
                     self.egg.eggxperience += 1
                     self.can_spawn_boss = True
-                #Can only spawn a boss after killing something
+                    #Can only spawn a boss after killing something
 
 
-        #TODO: define a new helper function called: boss_spawn_attempt()
         if (
-            #id current killed is divisible
             self.eggnemies_defeated / self._settings["boss_spawn_threshhold"] >= self.bosses_spawned + 1
             and self.can_spawn_boss
         ):
@@ -301,7 +219,7 @@ class GameModel:
             while True:
                 x = self.valid_enemy_spawn_x()
                 y = self.valid_enemy_spawn_y()
-                new_boss = Boss(
+                new_boss = self._boss_spawner.spawn_boss(
                     x, y,
                     self._settings["boss_width"],
                     self._settings["boss_height"],
@@ -346,7 +264,6 @@ class GameModel:
         if pressing_attack:
             self.attack()
 
-        #TODO: could define a new helper function called: check_egg_level_up() but not as urgent
         if self.egg.eggxperience >= self.next_egghancement_at:
             self._just_unlocked_egghancement = True
             self.waiting_for_egghancement = True
@@ -366,7 +283,6 @@ class GameModel:
         elif choice == 3:
             self.egg.set_speed(self.egg.speed + self.speed_incr)
 
-        #Could put into update function if multi-enhancements aren't allowed in current setup
         self.waiting_for_egghancement = False
         self.next_egghancement_at += self.egghancement_threshhold  
 
@@ -417,6 +333,10 @@ class GameModel:
     @property
     def current_total_eggnemies(self):
         return self.normal_eggnemies + self.bosses
+    
+    @property
+    def leaderboard(self):
+        return self._leaderboard
 
     @property
     def export_egg(self):

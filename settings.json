@@ -30,10 +30,10 @@
     "boss_initial_speed": 2,
 
     "eggnemy_wave_increment_hp": 2,
-    "eggnemy_wave_increment_attack": 1,
-    "eggnemy_wave_increment_speed": 1,
+    "eggnemy_wave_increment_attack": 0.2,
+    "eggnemy_wave_increment_speed": 0.3,
 
     "boss_wave_increment_hp": 3,
-    "boss_wave_increment_attack": 1,
-    "boss_wave_increment_speed": 1
+    "boss_wave_increment_attack": 0.5,
+    "boss_wave_increment_speed": 0.4
   }

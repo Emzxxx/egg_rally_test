@@ -1,6 +1,8 @@
-from model import GameModel, Eggnemy
+from model import GameModel
 from typing import Any
 import json
+from project_types import Eggnemy, Eggnemy_Spawner, Boss_Spawner, Eggnemy_Template
+from collections.abc import Sequence
 
 '''
     Unit Testing
@@ -17,8 +19,11 @@ with open("settings.json") as f:
 settings["world_width"] = 256
 settings["world_height"] = 256
 
+eggnemy_spawner = Eggnemy_Spawner()
+boss_spawner = Boss_Spawner()
+
 def test_initial_game_state():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     assert len(model.bosses) == 0
     assert model.eggnemies_defeated == 0
@@ -35,7 +40,7 @@ def test_initial_game_state():
     assert len(model.normal_eggnemies) == settings["eggnemy_count"]
 
 def test_egg_movement():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     egg = model.egg
     egg.set_speed(3)
 
@@ -111,7 +116,7 @@ def test_egg_movement():
     assert egg.relative_y == settings["world_height"] - egg.height
 
 def test_collision_egg_eggnemy():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     egg = model.egg
 
     # Not in collision
@@ -214,7 +219,7 @@ def test_collision_egg_eggnemy():
 
 
 def test_in_range():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     egg = model.egg
     r = model.egg_range
 
@@ -341,7 +346,7 @@ def test_boss_spawning_conditions():
     test_settings = settings
     test_settings["boss_spawn_threshhold"] = 7
     test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     model.eggnemies_defeated = 3
     model.can_spawn_boss = True
@@ -394,7 +399,7 @@ def test_boss_spawning_conditions():
 def test_next_wave_eggnemy_stats():
     # Reduce count for isolation
     settings["eggnemy_count"] = 1  
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     base_hp = settings["eggnemy_initial_hp"]
     base_attack = settings["eggnemy_initial_attack"]
@@ -427,7 +432,7 @@ def test_shift_enemies_normal():
     test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
     test_settings["egg_initial_speed"] = 2
 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     #Setup enemies
     north = Eggnemy(
@@ -487,8 +492,8 @@ def test_shift_enemies_normal():
                 1, 0, 0
             )
 
-    local_eggnemies = [north, south, east, west, north_east, north_west, south_east, south_west]
-    model.normal_eggnemies = local_eggnemies
+    local_eggnemies: Sequence[Eggnemy_Template] = [north, south, east, west, north_east, north_west, south_east, south_west]
+    model.normal_eggnemies = local_eggnemies # type: ignore Only becasue its a test of game logic and not test of LSP compliance
     
     '''
         TEST SHIFTING TO THE LEFT
@@ -735,7 +740,7 @@ def test_shift_enemies_edges():
     test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
     test_settings["egg_initial_speed"] = 2
 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     egg = model.egg
 
     #Setup enemies
@@ -797,7 +802,7 @@ def test_shift_enemies_edges():
             )
 
     local_eggnemies = [north, south, east, west, north_east, north_west, south_east, south_west]
-    model.normal_eggnemies = local_eggnemies
+    model.normal_eggnemies = local_eggnemies # type: ignore Only becasue its a test of game logic and not test of LSP compliance
     
 
     #Egg at the very right shift left
@@ -1067,7 +1072,7 @@ def test_egghancements():
     test_settings["attack_incr"] = 1
     test_settings["speed_incr"] = 1
 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     egg = model.egg
     #At the start
     assert egg.max_hp == 10
@@ -1122,7 +1127,7 @@ def test_win_condition_simple():
     test_settings = settings
     #To make it as isolated as possible, less chance to randomly kill or get damaged by a stray egg to skew tests
     test_settings["eggnemy_count"] = 0 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     #Newly created
     assert len(model.bosses) == 0
@@ -1150,7 +1155,7 @@ def test_loss_condition():
     test_settings = settings
     #To make it as isolated as possible, less chance to randomly kill or get damaged by a stray egg to skew tests
     test_settings["eggnemy_count"] = 0 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     
     #Newly created
     assert model.game_over_loss == False
@@ -1178,7 +1183,7 @@ def test_simple_eggnemy_cardinal_movement():
     test_settings["eggnemy_count"] = 0 
     test_settings["eggnemy_initial_speed"] = 1
 
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     north = Eggnemy(
                 test_settings["world_width"]//2,
@@ -1240,7 +1245,7 @@ def test_simple_eggnemy_ordinal_movement():
     #To make it as isolated as possible, less chance to randomly kill or get damaged by a stray egg to skew tests
     test_settings["eggnemy_count"] = 0 
     test_settings["eggnemy_initial_speed"] = 1
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     north_east = Eggnemy(
                 test_settings["world_width"],
@@ -1299,7 +1304,7 @@ def test_simple_eggnemy_ordinal_movement():
 def test_damage_done_by_enemy_simple():
     test_settings = settings
     test_settings["eggnemy_count"] = 0
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     # Place one enemy overlapping the egg
     enemy = Eggnemy(
@@ -1341,7 +1346,7 @@ def test_damage_done_by_enemy_simple():
 def test_damage_done_by_egg_simple():
     test_settings = settings
     test_settings["eggnemy_count"] = 0
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     enemy = Eggnemy(
         model.egg.x,
@@ -1398,7 +1403,7 @@ def test_damage_done_by_egg_simple():
 def test_removal_when_enemy_dies():
     test_settings = settings
     test_settings["eggnemy_count"] = 0
-    model = GameModel(test_settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
 
     enemy = Eggnemy(
         model.egg.x,
@@ -1449,7 +1454,7 @@ def test_removal_when_enemy_dies():
 
 
 def test_restart():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     # Simulate ongoing game where egg is not dead
     model.egg.hp = 1
     model.total_frames_passed = 210
@@ -1480,7 +1485,7 @@ def test_restart():
     assert model.eggnemies_defeated == 0
 
 def test_leaderboard():
-    model = GameModel(settings)
+    model = GameModel(settings, eggnemy_spawner, boss_spawner)
     scores = [300, 150, 600, 450]
 
     # Create initial sample leaderboard
