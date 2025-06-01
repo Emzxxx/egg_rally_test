@@ -278,19 +278,209 @@ def test_simple_eggnemy_ordinal_movement():
 
 
 def test_damage_done_by_enemy_simple():
-    ...
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0
+    model = GameModel(test_settings)
+
+    # Place one enemy overlapping the egg
+    enemy = Eggnemy(
+        model.egg.x,
+        model.egg.y,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        test_settings["eggnemy_initial_hp"],
+        2,  # damage per hit
+        test_settings["eggnemy_initial_speed"]
+    )
+    model.normal_eggnemies = [enemy]
+
+    initial_hp = model.egg.hp
+
+    # First update should cause damage
+    model.update(False, False, False, False, False, False)
+    assert model.egg.hp == initial_hp - 2
+    first_i_frame = model.i_frame
+    assert first_i_frame == model.fps - 1 # 1 frame has passed
+
+    # Damage is not dealt due to i_frame
+    model.update(False, False, False, False, False, False)
+    assert model.egg.hp == initial_hp - 2
+    assert model.i_frame == first_i_frame - 1
+
+    # Update until i_frame = 0
+    for _ in range(first_i_frame - 1):
+        model.update(False, False, False, False, False, False)
+
+    # i_frame should be 0 again
+    assert model.i_frame == 0
+
+    # Second update, enemy deals damage
+    model.update(False, False, False, False, False, False)
+    assert model.egg.hp == initial_hp - 4
+    assert model.i_frame == model.fps - 1
 
 def test_damage_done_by_egg_simple():
-    ...
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0
+    model = GameModel(test_settings)
+
+    enemy = Eggnemy(
+        model.egg.x,
+        model.egg.y,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        1,  # 1 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    model.normal_eggnemies = [enemy]
+    assert len(model.normal_eggnemies) == 1
+
+    model.egg.set_attack(1)
+    model.attack()
+
+    assert len(model.normal_eggnemies) == 0
+
+    # Eggnemy in range
+    enemy1 = Eggnemy(
+        model.egg.x,
+        model.egg.y,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        2,  # 2 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    # Eggnemy out of range
+    enemy2 = Eggnemy(
+        model.egg.x + model.egg_range,
+        model.egg.y + model.egg_range + model.egg.bottom,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        2,  # 2 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    model.normal_eggnemies = [enemy1, enemy2]
+    assert model.normal_eggnemies == [enemy1, enemy2]
+    
+    model.egg.set_attack(settings["egg_initial_attack"])
+    model.attack()
+    assert enemy1.hp == 1
+    assert model.normal_eggnemies == [enemy1, enemy2]
+    assert enemy2.hp == 2 # fails
+
+    model.attack()
+    # enemy1 is killed, enemy2 is not killed
+    assert model.normal_eggnemies == [enemy2]
+    assert enemy1.hp == 0
+    assert enemy2.hp == 2 # fails
 
 def test_removal_when_enemy_dies():
-    ...
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0
+    model = GameModel(test_settings)
+
+    enemy = Eggnemy(
+        model.egg.x,
+        model.egg.y,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        1,  # 1 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    model.normal_eggnemies = [enemy]
+    assert len(model.normal_eggnemies) == 1
+
+    model.egg.set_attack(1)
+    model.attack()
+
+    assert len(model.normal_eggnemies) == 0
+
+    # Eggnemy in range
+    enemy1 = Eggnemy(
+        model.egg.x,
+        model.egg.y,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        1,  # 1 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    # Eggnemy out of range
+    enemy2 = Eggnemy(
+        model.egg.x + model.egg_range,
+        model.egg.y + model.egg_range,
+        test_settings["eggnemy_width"],
+        test_settings["eggnemy_height"],
+        1,  # 1 hit kill
+        test_settings["eggnemy_initial_attack"],
+        test_settings["eggnemy_initial_speed"]
+    )
+    model.normal_eggnemies = [enemy1, enemy2]
+    assert len(model.normal_eggnemies) == 2
+    
+    model.egg.set_attack(settings["egg_initial_attack"])
+    model.attack()
+
+    # enemy1 is killed, enemy2 is not killed
+    assert model.normal_eggnemies == [enemy2]
+    assert len(model.normal_eggnemies) == 1
 
 
 def test_restart():
-    ...
+    model = GameModel(settings)
+    # Simulate ongoing game where egg is not dead
+    model.egg.hp = 1
+    model.total_frames_passed = 210
+    model.eggnemies_defeated = 2
+    # 1 tick
+    model.update(False, False, False, False, False, False)
+    # 2nd tick
+    model.update(False, False, False, False, False, True)
+    # Game should not have been restarted because egg is not dead
+    assert model.egg.hp == 1
+    # 2 frames have passed because of 2 updates
+    assert model.total_frames_passed == 212
+    # Eggnemies defeated remains the same
+    assert model.eggnemies_defeated == 2
+
+    # Egg is dead
+    model.egg.hp = 0
+    # Next frame, egg should be dead and model._game_over_loss = True
+    model.update(False, False, False, False, False, False)
+    # R is pressed
+    model.update(False, False, False, False, False, True)
+
+    # Game has been restarted => egg's hp returns to initial hp
+    assert model.egg.hp == settings["egg_initial_hp"]
+    # Timer is reset to 0
+    assert model.total_frames_passed == 0
+    # Enemies defeated reset to 0
+    assert model.eggnemies_defeated == 0
 
 def test_leaderboard():
-    ...
+    model = GameModel(settings)
+    scores = [300, 150, 600, 450]
 
+    # Create initial sample leaderboard
+    for score in scores:
+        model.add_to_leaderboard(score)
+    assert model.leaderboard == [600, 450, 300]
 
+    # New highest score
+    model.add_to_leaderboard(700)
+    assert model.leaderboard == [700, 600, 450]
+
+    # New 2nd best score
+    model.add_to_leaderboard(680)
+    assert model.leaderboard == [700, 680, 600]
+
+    # New 3rd best score
+    model.add_to_leaderboard(620)
+    assert model.leaderboard == [700, 680, 620]
+
+    # New score but not > current 3 best scores
+    model.add_to_leaderboard(450)
+    assert model.leaderboard == [700, 680, 620]
