@@ -31,57 +31,306 @@ def test_initial_game_state():
     assert len(model.normal_eggnemies) == settings["eggnemy_count"]
 
 def test_egg_movement():
-    #testing the max min jazz n stuff of the movemebt
+    model = GameModel(settings)
+    egg = model.egg
+    egg.set_speed(3)
 
-    #normal cases:
-    #from the center move like 3 to each direction then check if tama na
-    #make sure to set the egg speed 
-    #separate the directions
+    center_x = settings["world_width"] // 2
+    center_y = settings["world_height"] // 2
 
-    #Edge cases: 
-    #Egg at east, west, north, south, NE, NW, SE, SW
-    #update/move once then no more
+    # Move Left
+    egg.relative_x = center_x
+    model.update(True, False, False, False, False, False)
+    assert egg.relative_x == center_x - 3
 
-    ...
+    # Move Right
+    egg.relative_x = center_x
+    model.update(False, True, False, False, False, False)
+    assert egg.relative_x == center_x + 3
+
+    # Move Up
+    egg.relative_y = center_y
+    model.update(False, False, True, False, False, False)
+    assert egg.relative_y == center_y - 3
+
+    # Move Down
+    egg.relative_y = center_y
+    model.update(False, False, False, True, False, False)
+    assert egg.relative_y == center_y + 3
+
+    # Edge case: West boundary
+    egg.relative_x = 0
+    model.update(True, False, False, False, False, False)
+    assert egg.relative_x == 0
+
+    # Edge case: East boundary
+    egg.relative_x = settings["world_width"] - egg.width
+    model.update(False, True, False, False, False, False)
+    assert egg.relative_x == settings["world_width"] - egg.width
+
+    # Edge case: North boundary
+    egg.relative_y = 0
+    model.update(False, False, True, False, False, False)
+    assert egg.relative_y == 0
+
+    # Edge case: South boundary
+    egg.relative_y = settings["world_height"] - egg.height
+    model.update(False, False, False, True, False, False)
+    assert egg.relative_y == settings["world_height"] - egg.height
+
+    # Edge case: NW corner
+    egg.relative_x = 0
+    egg.relative_y = 0
+    model.update(True, False, True, False, False, False)
+    assert egg.relative_x == 0
+    assert egg.relative_y == 0
+
+    # Edge case: NE corner
+    egg.relative_x = settings["world_width"] - egg.width
+    egg.relative_y = 0
+    model.update(False, True, True, False, False, False)
+    assert egg.relative_x == settings["world_width"] - egg.width
+    assert egg.relative_y == 0
+
+    # Edge case: SW corner
+    egg.relative_x = 0
+    egg.relative_y = settings["world_height"] - egg.height
+    model.update(True, False, False, True, False, False)
+    assert egg.relative_x == 0
+    assert egg.relative_y == settings["world_height"] - egg.height
+
+    # Edge case: SE corner
+    egg.relative_x = settings["world_width"] - egg.width
+    egg.relative_y = settings["world_height"] - egg.height
+    model.update(False, True, False, True, False, False)
+    assert egg.relative_x == settings["world_width"] - egg.width
+    assert egg.relative_y == settings["world_height"] - egg.height
 
 def test_collision_egg_eggnemy():
-    #lots of eggnemies, have it check if eggnemies are in collision w egg or not
+    model = GameModel(settings)
+    egg = model.egg
 
-    #not in range 5 examples
-    '''
-    2 pixel away from being at the edge
-    2 at random areas 
+    # Not in collision
+    not_colliding = [
+        Eggnemy(egg.x - egg.width - 2, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # left
+        Eggnemy(egg.x + egg.width + 2, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # right
+        Eggnemy(egg.x, 
+                egg.y - egg.height - 2, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # above
+        Eggnemy(egg.x, 
+                egg.y + egg.height + 2, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # below
+        Eggnemy(0, 
+                0, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # random far corner
+    ]
+    for enemy in not_colliding:
+        assert not model.is_in_collision(enemy)
 
-    '''
+    # Edge-to-edge collision
+    colliding = [
+        Eggnemy(egg.x - 16, 
+                egg.y, 16, 
+                16, 
+                1, 
+                1, 
+                1),  # left edge
+        Eggnemy(egg.x + egg.width - 1, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # right edge
+        Eggnemy(egg.x, 
+                egg.y - 16, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # top edge
+        Eggnemy(egg.x, 
+                egg.y + egg.height - 1, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # bottom edge
+        Eggnemy(egg.x, 
+                egg.y, 
+                egg.width, egg.height, 1, 1, 1),  # full overlap
+        Eggnemy(egg.x + 4, 
+                egg.y + 4, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # corner overlap
+        Eggnemy(egg.x - 8, 
+                egg.y - 8, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # corner intersect
+        Eggnemy(egg.x + 8, 
+                egg.y + 8, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),  # opposite corner intersect
+    ]
+    for enemy in colliding:
+        assert model.is_in_collision(enemy)
 
-    #in range 
-    '''
-    4 edge to edge (1 per edge)
-    4 corner to corner (1 per corner)
-    3 intersecting
-    1 direectly on it
-    '''
-    ...
 
 def test_in_range():
-    #lots of eggnemies, have it check if eggnemies are in range or not
+    model = GameModel(settings)
+    egg = model.egg
+    r = model.egg_range
 
-    #not in range 5 examples
-    '''
-    2 pixel away from being at the edge
-    2 at random areas 
+    # Not in range
+    not_in_range = [
+        Eggnemy(egg.x - r - 17, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # left, outside attack range
+        Eggnemy(egg.x + egg.width + r + 1, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # above, outside attack range
+        Eggnemy(egg.x, # right, outside attack range
+                egg.y - r - 17, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1),
+        Eggnemy(egg.x, 
+                egg.y + egg.height + r + 1, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # below, outside attack range
+        Eggnemy(0, 
+                0, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # top left corner of map
+    ]
+    for enemy in not_in_range:
+        assert not model.is_in_range(enemy)
 
-    '''
+    # In range
+    in_range = [
+        Eggnemy(egg.x - r, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # touching left edge of attack range
+        Eggnemy(egg.x + egg.width + r - 1, 
+                egg.y, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # touching right edge of attack range
+        Eggnemy(egg.x, 
+                egg.y - r, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # touching top edge of attack range
+        Eggnemy(egg.x, 
+                egg.y + egg.height + r - 1, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # touching bottom edge of attack range
+        Eggnemy(egg.x, 
+                egg.y, 
+                egg.width, 
+                egg.height, 
+                1, 
+                1, 
+                1), # fully overlapping with egg
+        Eggnemy(egg.x + 4, 
+                egg.y + 4, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # slightly inside bottom-right quadrant of egg
+        Eggnemy(egg.x - 8, 
+                egg.y - 8, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # slightly inside top-left quadrant of egg
+        Eggnemy(egg.x + 8, 
+                egg.y + 8, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # deeper into bottom-right of egg
+        Eggnemy(egg.x - 1, 
+                egg.y - 1, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # 1 pixel to the top-left of egg
+        Eggnemy(egg.x + 1, 
+                egg.y + 1, 
+                16, 
+                16, 
+                1, 
+                1, 
+                1), # 1 pixel to the bottom-right of egg
+    ]
+    for enemy in in_range:
+        assert model.is_in_range(enemy)
 
-    #in range 
-    '''
-    4 edge to edge (1 per edge)
-    4 corner to corner (1 per corner)
-    3 in range but not in contact
-    2 intersecting w egg
-    1 direectly on egg
-    '''
-    ...
 
 def test_boss_spawning_conditions():
     #if less than the required amount killed, wala pa. If >= that the required then its spawned
@@ -139,8 +388,29 @@ def test_boss_spawning_conditions():
     assert len(model.bosses) == 3
 
 def test_next_wave_eggnemy_stats():
-    #play with wave counts and stat count of enemy with a preset stat increase set here
-    ...
+    # Reduce count for isolation
+    settings["eggnemy_count"] = 1  
+    model = GameModel(settings)
+
+    base_hp = settings["eggnemy_initial_hp"]
+    base_attack = settings["eggnemy_initial_attack"]
+    base_speed = settings["eggnemy_initial_speed"]
+
+    hp_incr = settings["eggnemy_wave_increment_hp"]
+    atk_incr = settings["eggnemy_wave_increment_attack"]
+    spd_incr = settings["eggnemy_wave_increment_speed"]
+
+    for wave in range(5):
+        model.normal_eggnemies = []
+        model.spawn_enemies()
+
+        enemy = model.normal_eggnemies[0]
+        assert enemy.hp == base_hp + hp_incr * wave
+        assert enemy.attack_stat == base_attack + atk_incr * wave
+        assert enemy.speed == base_speed + spd_incr * wave
+
+        model.normal_eggnemies = []
+        model.next_wave()
 
 def test_shift_enemies_normal():
     '''

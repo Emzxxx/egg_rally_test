@@ -65,7 +65,6 @@ class Egg:
 class Eggnemy(Egg):
     def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
         super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
-        self._speed = 1
         self._is_boss: bool = False    
 
     @property
@@ -79,7 +78,6 @@ class Eggnemy(Egg):
 class Boss(Eggnemy):
     def __init__(self, x: float, y: float, width: float, height: float, hp: int, initial_attack: int, initial_speed: int):
         super().__init__(x, y, width, height, hp, initial_attack, initial_speed)
-        self._speed = 1.5
         self._is_boss: bool = True    
 
 
@@ -423,3 +421,7 @@ class GameModel:
     @property
     def export_egg(self):
         return self.egg
+    
+    @property
+    def settings(self):
+        return self._settings
