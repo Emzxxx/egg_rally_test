@@ -8,12 +8,12 @@
     "egg_initial_attack": 1,
     "egg_initial_speed": 2,
     "egg_height": 16,
+    "egg_width": 16,
     
     "egghancement_threshhold": 3,
     "hp_incr": 5,
     "attack_incr": 1,
     "speed_incr": 1,
-    "egg_width": 16,
 
     "eggnemy_initial_hp": 2,
     "eggnemy_count": 10,
