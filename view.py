@@ -14,6 +14,7 @@ class GameView:
             self._height,
             fps=fps
         )
+        pyxel.load("assets.pyxres")
         pyxel.run(update_handler.update, draw_handler.draw)
 
     #Drawing functions
@@ -28,12 +29,12 @@ class GameView:
 
     def draw_egg(self, egg: EggInfo):
         if egg.hp > 0:
-            pyxel.rect(egg.x, egg.y, egg.width, egg.height, 7)
+            pyxel.blt(egg.x, egg.y, img=0, u=0, v=0, w=16, h=16, colkey=0)
             self.draw_range(egg)
             self.draw_egg_hp(egg)
 
     def draw_egg_hp(self, egg: EggInfo):
-        pyxel.text(egg.x - 5, egg.y + 10, f"{egg.hp}/{egg.max_hp}", 7)
+        pyxel.text(egg.x - 2, egg.y + 20, f"{egg.hp}/{egg.max_hp}", 7)
 
     def draw_range(self, egg: EggInfo):
         pyxel.rectb(
@@ -46,7 +47,7 @@ class GameView:
 
     def draw_eggnemies(self, enemies: Sequence[EggInfo]):
         for enemy in enemies:
-            pyxel.rect(enemy.x, enemy.y, enemy.width, enemy.height, 8)
+            pyxel.blt(enemy.x, enemy.y, img=1, u=0, v=0, w=16, h=16, colkey=0)
 
     def draw_eggnemies_defeated(self, eggnemies_defeated: int):
         pyxel.text(10, 10, f'{eggnemies_defeated}', 7)
@@ -84,13 +85,13 @@ class GameView:
 
     def draw_eggnemies_hp(self, enemies: Sequence[EggInfo]):
         for enemy in enemies:
-            pyxel.text(enemy.x - 5, enemy.y + 10, f"{enemy.hp}/{enemy.max_hp}", 7)
+            pyxel.text(enemy.x - 2, enemy.y + 20, f"{enemy.hp}/{enemy.max_hp}", 7)
 
     def draw_boss(self, boss: EggInfo):
-        pyxel.rect(boss.x, boss.y, boss.width, boss.height, 9)
+        pyxel.blt(boss.x, boss.y, img=2, u=0, v=0, w=16, h=16, colkey=0)
 
     def draw_boss_hp(self, boss: EggInfo):
-        pyxel.text(boss.x - 5, boss.y + 10, f"{boss.hp}/{boss.max_hp}", 9)
+        pyxel.text(boss.x - 2, boss.y + 20, f"{boss.hp}/{boss.max_hp}", 9)
 
     def draw_win_message(self):
         pyxel.text(

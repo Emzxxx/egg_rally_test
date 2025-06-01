@@ -1,5 +1,6 @@
 import random
-# from abc import ABC 
+# from abc import ABC
+import pyxel
 from typing import Literal, Any
 
 
@@ -104,6 +105,10 @@ class GameModel:
         self.attack_incr = settings["attack_incr"]
         self.speed_incr = settings["speed_incr"]
         self.egghancement_threshhold = settings["egghancement_threshhold"]
+
+        self._just_defeated_boss = False
+        self._just_unlocked_egghancement = False
+        self._just_died = False
         
         #add an enemy increasing stat each
 
@@ -262,6 +267,8 @@ class GameModel:
                 boss.hp -= self.egg.attack_stat
                 if boss.hp <= 0:
                     self.bosses.remove(boss)
+                    self._just_defeated_boss = True
+                    pyxel.play
                     self.next_wave()
                     self.spawn_enemies()
                     self.eggnemies_defeated += 1
@@ -304,6 +311,8 @@ class GameModel:
         egg = self.egg
 
         if egg.hp <= 0:
+            if not self._game_over_loss:
+                self._just_died = True
             self._game_over_loss = True
             return
 
@@ -324,6 +333,7 @@ class GameModel:
             self.attack()
 
         if self.egg.eggxperience >= self.next_egghancement_at:
+            self._just_unlocked_egghancement = True
             self.waiting_for_egghancement = True
 
         if self.waiting_for_egghancement:
@@ -343,7 +353,16 @@ class GameModel:
 
         #Could put into update function if multi-enhancements aren't allowed in current setup
         self.waiting_for_egghancement = False
-        self.next_egghancement_at += self.egghancement_threshhold
+        self.next_egghancement_at += self.egghancement_threshhold  
+
+    def reset_just_defeated_boss(self):
+        self._just_defeated_boss = False
+
+    def reset_just_died(self):
+        self._just_died = False
+
+    def reset_just_unlocked_egghancement(self):
+        self._just_unlocked_egghancement = False
 
     @property
     def width(self):
@@ -364,6 +383,18 @@ class GameModel:
     @property
     def game_over_loss(self):
         return self._game_over_loss
+    
+    @property
+    def just_defeated_boss(self) -> bool:
+        return self._just_defeated_boss
+    
+    @property
+    def just_died(self) -> bool:
+        return self._just_died
+
+    @property
+    def just_unlocked_egghancement(self) -> bool:
+        return self._just_unlocked_egghancement
     
     @property
     def current_total_eggnemies(self):
