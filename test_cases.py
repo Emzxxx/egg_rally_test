@@ -289,7 +289,7 @@ def test_shift_enemies_normal():
     assert east.x == test_settings["world_width"] - 4
     assert east.y == test_settings["world_height"]//2
 
-    assert west.x == - 2
+    assert west.x == - 4
     assert west.y == test_settings["world_height"]//2
 
 
@@ -306,6 +306,7 @@ def test_shift_enemies_normal():
     assert south_west.y == test_settings["world_height"]
 
     #shift right 3 more times, 4 total
+    model.shift_enemies("right")
     model.shift_enemies("right")
     model.shift_enemies("right")
     
@@ -337,7 +338,7 @@ def test_shift_enemies_normal():
 def test_shift_enemies_at_edge():
     #the above but relative x and relative y change to specifically target the failing conditions of the function
     ...
-    
+
 def test_egghancements():
     test_settings = settings
     test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
