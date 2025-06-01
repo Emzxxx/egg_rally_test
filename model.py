@@ -1,10 +1,5 @@
 import random
-# from abc import ABC
-import pyxel
 from typing import Literal, Any
-
-
-egg_range: int = 10
 
 '''
     TODO: 
@@ -15,8 +10,6 @@ egg_range: int = 10
         Specifically, the interaction between the shift placement logic and the path tracking logic
 
 '''
-
-
 class Egg:
     def __init__(self, x: float, 
                  y: float, 
@@ -98,19 +91,21 @@ class GameModel:
         self._width: int = settings["world_width"]
         self._height: int = settings["world_height"]
         self._fps: int = settings["fps"]
+        self._egg_range: int = 10
         self.leaderboard: list[int] = []
-
+        
         self.waiting_for_egghancement = False
         self.hp_incr = settings["hp_incr"]
         self.attack_incr = settings["attack_incr"]
         self.speed_incr = settings["speed_incr"]
         self.egghancement_threshhold = settings["egghancement_threshhold"]
+        self.invalid_enemy_x_spawn: list[int] = [_ for _ in range(self.width//2-12, self.width//2+self._settings["egg_width"]+13)]
+        self.invalid_enemy_y_spawn: list[int] = [_ for _ in range(self.height//2-12, self.height//2+self._settings["egg_height"]+13)]
 
         self._just_defeated_boss = False
         self._just_unlocked_egghancement = False
         self._just_died = False
         
-        #add an enemy increasing stat each
 
         self.init_state()
 
@@ -125,8 +120,8 @@ class GameModel:
         self.can_spawn_boss: bool = False
 
         self.egg: Egg = Egg(
-            self._settings["world_width"] // 2,
-            self._settings["world_height"] // 2,
+            self.width // 2,
+            self.height // 2,
             self._settings["egg_width"],
             self._settings["egg_height"],
             self._settings["egg_initial_hp"],
@@ -139,15 +134,25 @@ class GameModel:
         self.bosses: list[Boss] = []
         self.bosses_spawned: int = 0
         
+    def valid_enemy_spawn_x(self):
+        while True:
+            x = random.randint(-150, self.width + 150)
+            if x not in self.invalid_enemy_x_spawn:
+                return x
 
+    def valid_enemy_spawn_y(self):
+        while True:
+            y = random.randint(-150, self.height + 150)
+            if y not in self.invalid_enemy_y_spawn:
+                return y
 
     def spawn_enemies(self):
         occupied_centers: set[tuple[float, float]] = set()
 
         for _ in range(self._settings["eggnemy_count"]):
             while True:
-                x = random.randint(-150, self._width + 150)
-                y = random.randint(-150, self._height + 150)
+                x = self.valid_enemy_spawn_x()
+                y = self.valid_enemy_spawn_y()
                 new_enemy = Eggnemy(
                     x,
                     y,
@@ -175,9 +180,9 @@ class GameModel:
 
     def is_in_range(self, enemy: Eggnemy) -> bool:
         egg = self.egg
-        if enemy.left - egg.right > egg_range or egg.left - enemy.right > egg_range:
+        if enemy.left - egg.right > self.egg_range or egg.left - enemy.right > self.egg_range:
             return False
-        if egg.top - enemy.bottom > egg_range or enemy.top - egg.bottom > egg_range:
+        if egg.top - enemy.bottom > self.egg_range or enemy.top - egg.bottom > self.egg_range:
             return False
         return True
 
@@ -268,7 +273,6 @@ class GameModel:
                 if boss.hp <= 0:
                     self.bosses.remove(boss)
                     self._just_defeated_boss = True
-                    pyxel.play
                     self.next_wave()
                     self.spawn_enemies()
                     self.eggnemies_defeated += 1
@@ -285,8 +289,8 @@ class GameModel:
             self.can_spawn_boss = False
 
             while True:
-                x = random.randint(-150, self._width + 150)
-                y = random.randint(-150, self._height + 150)
+                x = self.valid_enemy_spawn_x()
+                y = self.valid_enemy_spawn_y()
                 new_boss = Boss(
                     x, y,
                     self._settings["boss_width"],
@@ -376,6 +380,9 @@ class GameModel:
     def fps(self):
         return self._fps
     
+    @property
+    def egg_range(self):
+        return self._egg_range
     @property
     def wave(self):
         return self._wave
