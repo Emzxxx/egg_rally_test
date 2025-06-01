@@ -3,11 +3,9 @@ from typing import Literal, Any
 
 '''
     TODO: 
-    [EXTRA]
-    - Sometimes if you and the eggnemies are heading diagonally to a corner, 
-        when you press both left and right theyll go beyond the boundary, not exactly following the egg
-        I think thats something that has to do with pressing both keys at the same time and 
-        Specifically, the interaction between the shift placement logic and the path tracking logic
+    - Bunch of scattered TODO's here
+    - Protocol the Egg and Eggnemy and Boss to allow more flexible possibility of OCP
+    - Create helper classes and functions described in the TODO's to more affirm SRP
 
 '''
 class Egg:
@@ -94,17 +92,27 @@ class GameModel:
         self._egg_range: int = 10
         self.leaderboard: list[int] = []
         
+        self._just_defeated_boss = False
+        self._just_unlocked_egghancement = False
+        self._just_died = False
+
         self.waiting_for_egghancement = False
         self.hp_incr = settings["hp_incr"]
         self.attack_incr = settings["attack_incr"]
         self.speed_incr = settings["speed_incr"]
         self.egghancement_threshhold = settings["egghancement_threshhold"]
+
+        self.eggnemy_hp_incr = settings["eggnemy_wave_increment_hp"]
+        self.eggnemy_attack_incr = settings["eggnemy_wave_increment_attack"]
+        self.eggnemy_speed_incr = settings["eggnemy_wave_increment_speed"]
+        
+        self.boss_hp_incr = settings["boss_wave_increment_hp"]
+        self.boss_attack_incr = settings["boss_wave_increment_attack"]
+        self.boss_speed_incr = settings["boss_wave_increment_speed"]
+
         self.invalid_enemy_x_spawn: list[int] = [_ for _ in range(self.width//2-12, self.width//2+self._settings["egg_width"]+13)]
         self.invalid_enemy_y_spawn: list[int] = [_ for _ in range(self.height//2-12, self.height//2+self._settings["egg_height"]+13)]
 
-        self._just_defeated_boss = False
-        self._just_unlocked_egghancement = False
-        self._just_died = False
         
 
         self.init_state()
@@ -158,9 +166,9 @@ class GameModel:
                     y,
                     self._settings["eggnemy_width"],
                     self._settings["eggnemy_height"],
-                    self._settings["eggnemy_initial_hp"] + self._settings["eggnemy_wave_increment_hp"] * self.wave,
-                    self._settings["eggnemy_initial_attack"] + self._settings["eggnemy_wave_increment_attack"] * self.wave,
-                    self._settings["eggnemy_initial_speed"] + self._settings["eggnemy_wave_increment_speed"] * self.wave
+                    self._settings["eggnemy_initial_hp"] + self.eggnemy_hp_incr * self.wave,
+                    self._settings["eggnemy_initial_attack"] + self.eggnemy_attack_incr * self.wave,
+                    self._settings["eggnemy_initial_speed"] + self.eggnemy_speed_incr * self.wave
                 )
                 if new_enemy.center not in occupied_centers:
                     self.normal_eggnemies.append(new_enemy)
@@ -213,6 +221,7 @@ class GameModel:
 
         new_centers: set[tuple[float, float]] = set()
 
+        #TODO: define a new helper function called, update_enemy_movements()
         for enemy in self.current_total_eggnemies:
             # Keep old center in case a move is rejected
             old_center = enemy.center
@@ -244,6 +253,7 @@ class GameModel:
                 # Keep old center
                 new_centers.add(old_center)
 
+        #TODO: define a new helper function called: update_enemy_damage_attempt()
         if self.i_frame == 0:
             for enemy in self.current_total_eggnemies:
                 if self.is_in_collision(enemy):
@@ -280,6 +290,8 @@ class GameModel:
                     self.can_spawn_boss = True
                 #Can only spawn a boss after killing something
 
+
+        #TODO: define a new helper function called: boss_spawn_attempt()
         if (
             #id current killed is divisible
             self.eggnemies_defeated / self._settings["boss_spawn_threshhold"] >= self.bosses_spawned + 1
@@ -295,9 +307,9 @@ class GameModel:
                     x, y,
                     self._settings["boss_width"],
                     self._settings["boss_height"],
-                    self._settings["boss_initial_hp"] + self._settings["boss_wave_increment_hp"] * self.wave,
-                    self._settings["boss_initial_attack"] + self._settings["boss_wave_increment_attack"] * self.wave,
-                    self._settings["boss_initial_speed"] + self._settings["boss_wave_increment_speed"] * self.wave
+                    self._settings["boss_initial_hp"] + self.boss_hp_incr * self.wave,
+                    self._settings["boss_initial_attack"] + self.boss_attack_incr * self.wave,
+                    self._settings["boss_initial_speed"] + self.boss_speed_incr * self.wave
                 )
                 if all(new_boss.center != e.center for e in self.current_total_eggnemies):
                     self.bosses.append(new_boss)
@@ -336,6 +348,7 @@ class GameModel:
         if pressing_attack:
             self.attack()
 
+        #TODO: could define a new helper function called: check_egg_level_up() but not as urgent
         if self.egg.eggxperience >= self.next_egghancement_at:
             self._just_unlocked_egghancement = True
             self.waiting_for_egghancement = True

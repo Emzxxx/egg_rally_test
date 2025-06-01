@@ -2,7 +2,12 @@ from model import GameModel, Eggnemy
 from typing import Any
 import json
 
-#Unit Testing
+'''
+    Unit Testing
+    
+    Note: Any setting important has to be set in the function itself in case the settings get messed up at any point
+'''
+
 
 #Import settings for tests
 with open("settings.json") as f:
@@ -25,16 +30,57 @@ def test_initial_game_state():
     assert model.game_over_loss == False
     assert len(model.normal_eggnemies) == settings["eggnemy_count"]
 
-def test_collision_egg_eggnemy():
-    #Improve collision code to make it have to accept an egg rin so we can test it here
+def test_egg_movement():
+    #testing the max min jazz n stuff of the movemebt
+
+    #normal cases:
+    #from the center move like 3 to each direction then check if tama na
+    #make sure to set the egg speed 
+    #separate the directions
+
+    #Edge cases: 
+    #Egg at east, west, north, south, NE, NW, SE, SW
+    #update/move once then no more
+
     ...
 
-def test_collision_egg_wall():
-    #testing the max min jazz n stuff of the movemebt
+def test_collision_egg_eggnemy():
+    #lots of eggnemies, have it check if eggnemies are in collision w egg or not
+
+    #not in range 5 examples
+    '''
+    2 pixel away from being at the edge
+    2 at random areas 
+
+    '''
+
+    #in range 
+    '''
+    4 edge to edge (1 per edge)
+    4 corner to corner (1 per corner)
+    3 intersecting
+    1 direectly on it
+    '''
     ...
 
 def test_in_range():
     #lots of eggnemies, have it check if eggnemies are in range or not
+
+    #not in range 5 examples
+    '''
+    2 pixel away from being at the edge
+    2 at random areas 
+
+    '''
+
+    #in range 
+    '''
+    4 edge to edge (1 per edge)
+    4 corner to corner (1 per corner)
+    3 in range but not in contact
+    2 intersecting w egg
+    1 direectly on egg
+    '''
     ...
 
 def test_boss_spawning_conditions():
@@ -91,6 +137,262 @@ def test_boss_spawning_conditions():
 
     model.attack() 
     assert len(model.bosses) == 3
+
+def test_next_wave_eggnemy_stats():
+    #play with wave counts and stat count of enemy with a preset stat increase set here
+    ...
+
+def test_shift_enemies_normal():
+    '''
+    All directions put in one test function for compactness
+
+    Could theoretically separate each direction with its own eggnemies setup
+    '''
+
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
+    test_settings["egg_initial_speed"] = 2
+
+    model = GameModel(test_settings)
+
+    #Setup enemies
+    north = Eggnemy(
+            test_settings["world_width"]//2,
+            0,
+            test_settings["world_height"],
+            test_settings["world_height"],
+            1, 0, 0
+                )
+    south = Eggnemy(
+                test_settings["world_width"]//2,
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    east = Eggnemy(
+                test_settings["world_width"],
+                test_settings["world_height"]//2,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    west = Eggnemy(
+                0,
+                test_settings["world_height"]//2,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    north_east = Eggnemy(
+                test_settings["world_width"],
+                0,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    north_west = Eggnemy(
+                0,
+                0,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    south_east = Eggnemy(
+                test_settings["world_width"],
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    south_west = Eggnemy(
+                0,
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+
+    local_eggnemies = [north, south, east, west, north_east, north_west, south_east, south_west]
+    model.normal_eggnemies = local_eggnemies
+    
+    '''
+        TEST SHIFTING TO THE LEFT
+    '''
+    model.shift_enemies("left")
+
+    assert north.x == test_settings["world_width"]//2 - 2
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2 - 2
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"] - 2
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == - 2 #Out of the screen
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"] - 2
+    assert north_east.y == 0
+
+    assert north_west.x == - 2
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"] - 2
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == - 2
+    assert south_west.y == test_settings["world_height"]
+
+    #shift left 2 more times, 3 total
+    model.shift_enemies("left")
+    model.shift_enemies("left")
+    
+    assert north.x == test_settings["world_width"]//2 - 6
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2 - 6
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"] - 6
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == - 6
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"] - 6
+    assert north_east.y == 0
+
+    assert north_west.x == - 6
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"] - 6
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == - 6
+    assert south_west.y == test_settings["world_height"]
+
+    '''
+        TEST SHIFTING TO THE RIGHT
+    '''
+    model.shift_enemies("right")
+
+    assert north.x == test_settings["world_width"]//2 - 4
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2 - 4
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"] - 4
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == - 2
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"] - 4
+    assert north_east.y == 0
+
+    assert north_west.x == - 4
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"] - 4
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == - 4
+    assert south_west.y == test_settings["world_height"]
+
+    #shift right 3 more times, 4 total
+    model.shift_enemies("right")
+    model.shift_enemies("right")
+    
+    assert north.x == test_settings["world_width"]//2 + 2
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2 + 2
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"] + 2
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 2 #Back into the screen
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"] + 2
+    assert north_east.y == 0
+
+    assert north_west.x == 2
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"] + 2
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 2
+    assert south_west.y == test_settings["world_height"]
+    
+def test_shift_enemies_at_edge():
+    #the above but relative x and relative y change to specifically target the failing conditions of the function
+    ...
+    
+def test_egghancements():
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
+    test_settings["egg_initial_hp"] = 10
+    test_settings["egg_initial_attack"] = 1
+    test_settings["egg_initial_speed"] = 2
+    test_settings["hp_incr"] = 5
+    test_settings["attack_incr"] = 1
+    test_settings["speed_incr"] = 1
+
+    model = GameModel(test_settings)
+    egg = model.egg
+    #At the start
+    assert egg.max_hp == 10
+    assert egg.attack_stat == 1
+    assert egg.speed == 2
+
+    #Choose 1 (increase hp)
+    model.apply_egghancement(1)
+    assert egg.max_hp == 15
+    assert egg.attack_stat == 1
+    assert egg.speed == 2
+
+    #Choose 1 (increase hp), 3 more times [total of 4]
+    for _ in range(3):
+        model.apply_egghancement(1)
+    assert egg.max_hp == 30
+    assert egg.attack_stat == 1
+    assert egg.speed == 2
+
+    #Choose 2 (increase attack)
+    model.apply_egghancement(2)
+    assert egg.max_hp == 30
+    assert egg.attack_stat == 2
+    assert egg.speed == 2
+
+    #Choose 2 (increase attack), 3 more times [total of 4]
+    for _ in range(3):
+        model.apply_egghancement(2)
+    assert egg.max_hp == 30
+    assert egg.attack_stat == 5
+    assert egg.speed == 2
+
+    #Choose 3 (increase speed)
+    model.apply_egghancement(3)
+    assert egg.max_hp == 30
+    assert egg.attack_stat == 5
+    assert egg.speed == 3
+
+    #Choose 3 (increase speed), 3 more times [total of 4]
+    for _ in range(3):
+        model.apply_egghancement(3)
+    assert egg.max_hp == 30
+    assert egg.attack_stat == 5
+    assert egg.speed == 6
 
 
 '''
