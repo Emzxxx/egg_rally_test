@@ -1,4 +1,4 @@
-from model import GameModel, Eggnemy, egg_range
+from model import GameModel, Eggnemy
 from typing import Any
 import json
 
@@ -353,8 +353,8 @@ def test_damage_done_by_egg_simple():
     )
     # Eggnemy out of range
     enemy2 = Eggnemy(
-        model.egg.x + egg_range,
-        model.egg.y + egg_range + model.egg.bottom,
+        model.egg.x + model.egg_range,
+        model.egg.y + model.egg_range + model.egg.bottom,
         test_settings["eggnemy_width"],
         test_settings["eggnemy_height"],
         2,  # 2 hit kill
@@ -410,8 +410,8 @@ def test_removal_when_enemy_dies():
     )
     # Eggnemy out of range
     enemy2 = Eggnemy(
-        model.egg.x + egg_range,
-        model.egg.y + egg_range,
+        model.egg.x + model.egg_range,
+        model.egg.y + model.egg_range,
         test_settings["eggnemy_width"],
         test_settings["eggnemy_height"],
         1,  # 1 hit kill
