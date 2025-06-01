@@ -30,6 +30,17 @@ class GameController:
                 self._view.pressing_restart_key()
             )
 
+        if self._model.just_defeated_boss:
+            pyxel.play(0, 0)
+            self._model.reset_just_defeated_boss()
+
+        if self._model.just_unlocked_egghancement:
+            pyxel.play(0, 1)
+            self._model.reset_just_unlocked_egghancement()
+
+        if self._model.just_died:
+            pyxel.play(0, 2)
+            self._model.reset_just_died()
 
     def draw(self):
         pyxel.cls(0)
