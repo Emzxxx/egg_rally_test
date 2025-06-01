@@ -3,11 +3,9 @@ from typing import Literal, Any
 
 '''
     TODO: 
-    [EXTRA]
-    - Sometimes if you and the eggnemies are heading diagonally to a corner, 
-        when you press both left and right theyll go beyond the boundary, not exactly following the egg
-        I think thats something that has to do with pressing both keys at the same time and 
-        Specifically, the interaction between the shift placement logic and the path tracking logic
+    - Bunch of scattered TODO's here
+    - Protocol the Egg and Eggnemy and Boss to allow more flexible possibility of OCP
+    - Create helper classes and functions described in the TODO's to more affirm SRP
 
 '''
 class Egg:
@@ -223,6 +221,7 @@ class GameModel:
 
         new_centers: set[tuple[float, float]] = set()
 
+        #TODO: define a new helper function called, update_enemy_movements()
         for enemy in self.current_total_eggnemies:
             # Keep old center in case a move is rejected
             old_center = enemy.center
@@ -254,6 +253,7 @@ class GameModel:
                 # Keep old center
                 new_centers.add(old_center)
 
+        #TODO: define a new helper function called: update_enemy_damage_attempt()
         if self.i_frame == 0:
             for enemy in self.current_total_eggnemies:
                 if self.is_in_collision(enemy):
@@ -290,6 +290,8 @@ class GameModel:
                     self.can_spawn_boss = True
                 #Can only spawn a boss after killing something
 
+
+        #TODO: define a new helper function called: boss_spawn_attempt()
         if (
             #id current killed is divisible
             self.eggnemies_defeated / self._settings["boss_spawn_threshhold"] >= self.bosses_spawned + 1
@@ -346,6 +348,7 @@ class GameModel:
         if pressing_attack:
             self.attack()
 
+        #TODO: could define a new helper function called: check_egg_level_up() but not as urgent
         if self.egg.eggxperience >= self.next_egghancement_at:
             self._just_unlocked_egghancement = True
             self.waiting_for_egghancement = True
