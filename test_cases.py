@@ -9,9 +9,13 @@ import json
 '''
 
 
-#Import settings for tests
+#Import settings for tests, usually only really works if in its base settings
 with open("settings.json") as f:
     settings: dict[str, Any] = json.load(f)
+
+#To make it concrete
+settings["world_width"] = 256
+settings["world_height"] = 256
 
 def test_initial_game_state():
     model = GameModel(settings)
@@ -334,10 +338,454 @@ def test_shift_enemies_normal():
 
     assert south_west.x == 2
     assert south_west.y == test_settings["world_height"]
+
+    '''
+        TEST SHIFTING UPWARDS 
+    '''
+    model.shift_enemies("up")
+
+    assert north.x == test_settings["world_width"]//2 + 2
+    assert north.y == - 2
+
+    assert south.x == test_settings["world_width"]//2 + 2
+    assert south.y == test_settings["world_height"] - 2
+                
+    assert east.x == test_settings["world_width"] + 2
+    assert east.y == test_settings["world_height"]//2 - 2
+
+    assert west.x == 2 
+    assert west.y == test_settings["world_height"]//2 - 2
+
+
+    assert north_east.x == test_settings["world_width"] + 2
+    assert north_east.y == - 2
+
+    assert north_west.x == 2
+    assert north_west.y == - 2
+
+    assert south_east.x == test_settings["world_width"] + 2
+    assert south_east.y == test_settings["world_height"] - 2
+
+    assert south_west.x == 2
+    assert south_west.y == test_settings["world_height"] - 2
+
+    #shift up 4 more times, 5 total
+    model.shift_enemies("up")
+    model.shift_enemies("up")
+    model.shift_enemies("up")
+    model.shift_enemies("up")
+
+    assert north.x == test_settings["world_width"]//2 + 2
+    assert north.y == -10
+
+    assert south.x == test_settings["world_width"]//2 + 2
+    assert south.y == test_settings["world_height"] -10
+                
+    assert east.x == test_settings["world_width"] + 2
+    assert east.y == test_settings["world_height"]//2 -10
+
+    assert west.x == 2
+    assert west.y == test_settings["world_height"]//2 -10
+
+
+    assert north_east.x == test_settings["world_width"] + 2
+    assert north_east.y == -10
+
+    assert north_west.x == 2
+    assert north_west.y == -10
+
+    assert south_east.x == test_settings["world_width"] + 2
+    assert south_east.y == test_settings["world_height"] -10
+
+    assert south_west.x == 2
+    assert south_west.y == test_settings["world_height"] -10
+
+    '''
+        TEST SHIFTING DOWNWARDS 
+    '''
+    model.shift_enemies("down")
+
+    assert north.x == test_settings["world_width"]//2 + 2
+    assert north.y == - 8
+
+    assert south.x == test_settings["world_width"]//2 + 2
+    assert south.y == test_settings["world_height"] - 8
+                
+    assert east.x == test_settings["world_width"] + 2
+    assert east.y == test_settings["world_height"]//2 - 8
+
+    assert west.x == 2
+    assert west.y == test_settings["world_height"]//2 - 8
+
+
+    assert north_east.x == test_settings["world_width"] + 2
+    assert north_east.y == - 8
+
+    assert north_west.x == 2
+    assert north_west.y == - 8
+
+    assert south_east.x == test_settings["world_width"] + 2
+    assert south_east.y == test_settings["world_height"] - 8
+
+    assert south_west.x == 2
+    assert south_west.y == test_settings["world_height"] - 8
+
+    #shift down 2 more times, 3 total
+    model.shift_enemies("down")
+    model.shift_enemies("down")
+
+    assert north.x == test_settings["world_width"]//2 + 2
+    assert north.y == - 4
+
+    assert south.x == test_settings["world_width"]//2 + 2
+    assert south.y == test_settings["world_height"] - 4
+                
+    assert east.x == test_settings["world_width"] + 2
+    assert east.y == test_settings["world_height"]//2 - 4
+
+    assert west.x == 2
+    assert west.y == test_settings["world_height"]//2 - 4
+
+
+    assert north_east.x == test_settings["world_width"] + 2
+    assert north_east.y == - 4
+
+    assert north_west.x == 2
+    assert north_west.y == - 4
+
+    assert south_east.x == test_settings["world_width"] + 2
+    assert south_east.y == test_settings["world_height"] - 4
+
+    assert south_west.x == 2
+    assert south_west.y == test_settings["world_height"] - 4
+
+
+def test_shift_enemies_edges():
+    test_settings = settings
+    test_settings["eggnemy_count"] = 0 #To make it as isolated as possible, chance to randomly kill a stray egg to skew tests
+    test_settings["egg_initial_speed"] = 2
+
+    model = GameModel(test_settings)
+    egg = model.egg
+
+    #Setup enemies
+    north = Eggnemy(
+            test_settings["world_width"]//2,
+            0,
+            test_settings["world_height"],
+            test_settings["world_height"],
+            1, 0, 0
+                )
+    south = Eggnemy(
+                test_settings["world_width"]//2,
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    east = Eggnemy(
+                test_settings["world_width"],
+                test_settings["world_height"]//2,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    west = Eggnemy(
+                0,
+                test_settings["world_height"]//2,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    north_east = Eggnemy(
+                test_settings["world_width"],
+                0,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    north_west = Eggnemy(
+                0,
+                0,
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    south_east = Eggnemy(
+                test_settings["world_width"],
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+    south_west = Eggnemy(
+                0,
+                test_settings["world_height"],
+                test_settings["eggnemy_width"],
+                test_settings["eggnemy_height"],
+                1, 0, 0
+            )
+
+    local_eggnemies = [north, south, east, west, north_east, north_west, south_east, south_west]
+    model.normal_eggnemies = local_eggnemies
     
-def test_shift_enemies_at_edge():
-    #the above but relative x and relative y change to specifically target the failing conditions of the function
-    ...
+
+    #Egg at the very right shift left
+    egg.relative_x = test_settings["world_width"] - egg.width
+    egg.relative_y = test_settings["world_height"]//2
+
+    model.shift_enemies("left")
+
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very left shift right
+    egg.relative_x = 0 - 2
+    egg.relative_y = test_settings["world_height"]//2
+
+    model.shift_enemies("right")
+
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very top shift down
+    egg.relative_x = test_settings["world_width"]//2
+    egg.relative_y = 0
+
+    model.shift_enemies("down")
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very bottom shift up
+    egg.relative_x = test_settings["world_width"]//2
+    egg.relative_y = test_settings["world_height"]
+
+    model.shift_enemies("up")
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very top right shift down and left
+    egg.relative_x = test_settings["world_width"] - egg.width
+    egg.relative_y = 0
+
+    model.shift_enemies("left")
+    model.shift_enemies("down")
+
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very top left shift down and right
+    egg.relative_x = 0
+    egg.relative_y = 0
+
+    model.shift_enemies("right")
+    model.shift_enemies("down")
+
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+
+    #Egg at the very bottom right shift up and left
+    egg.relative_x = test_settings["world_width"] - egg.width
+    egg.relative_y = test_settings["world_height"]
+
+    model.shift_enemies("up")
+    model.shift_enemies("left")
+    
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+
+    #Egg at the very bottom left shift up and right
+    egg.relative_x = 0
+    egg.relative_y = test_settings["world_height"]
+
+    model.shift_enemies("right")
+    model.shift_enemies("up")
+    
+    assert north.x == test_settings["world_width"]//2  
+    assert north.y == 0
+
+    assert south.x == test_settings["world_width"]//2  
+    assert south.y == test_settings["world_height"]
+                
+    assert east.x == test_settings["world_width"]  
+    assert east.y == test_settings["world_height"]//2
+
+    assert west.x == 0
+    assert west.y == test_settings["world_height"]//2
+
+
+    assert north_east.x == test_settings["world_width"]  
+    assert north_east.y == 0
+
+    assert north_west.x == 0
+    assert north_west.y == 0
+
+    assert south_east.x == test_settings["world_width"]  
+    assert south_east.y == test_settings["world_height"]
+
+    assert south_west.x == 0
+    assert south_west.y == test_settings["world_height"]
+    
 
 def test_egghancements():
     test_settings = settings
@@ -397,12 +845,10 @@ def test_egghancements():
 
 
 '''
-Test case does not apply for phase 6 beyond
-Can be converted into wave count tests with just a little tweakinf
-since they have similar enough logic 
+Test case no longer applies for phase 6 beyond
 
 def test_win_condition_simple():
-    #if boss dead, dapat win na
+    #if boss dead, win condition reached
     test_settings = settings
     #To make it as isolated as possible, less chance to randomly kill or get damaged by a stray egg to skew tests
     test_settings["eggnemy_count"] = 0 
