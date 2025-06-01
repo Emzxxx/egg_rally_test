@@ -1,5 +1,5 @@
 import pyxel
-from project_types import EggInfo, UpdateHandler, DrawHandler
+from project_types import EggInfo, UpdateHandler, DrawHandler, Eggnemy_Template
 from collections.abc import Sequence
 
 
@@ -45,7 +45,7 @@ class GameView:
             1
         )
 
-    def draw_eggnemies(self, enemies: Sequence[EggInfo]):
+    def draw_eggnemies(self, enemies: Sequence[Eggnemy_Template]):
         for enemy in enemies:
             pyxel.blt(enemy.x, enemy.y, img=1, u=0, v=0, w=16, h=16, colkey=0)
 
@@ -83,14 +83,14 @@ class GameView:
         seconds %= 60
         return f"{minutes} : {seconds:02}"
 
-    def draw_eggnemies_hp(self, enemies: Sequence[EggInfo]):
+    def draw_eggnemies_hp(self, enemies: Sequence[Eggnemy_Template]):
         for enemy in enemies:
             pyxel.text(enemy.x - 2, enemy.y + 20, f"{enemy.hp}/{enemy.max_hp}", 7)
 
-    def draw_boss(self, boss: EggInfo):
+    def draw_boss(self, boss: Eggnemy_Template):
         pyxel.blt(boss.x, boss.y, img=2, u=0, v=0, w=16, h=16, colkey=0)
 
-    def draw_boss_hp(self, boss: EggInfo):
+    def draw_boss_hp(self, boss: Eggnemy_Template):
         pyxel.text(boss.x - 2, boss.y + 20, f"{boss.hp}/{boss.max_hp}", 9)
 
     def draw_win_message(self):
