@@ -94,17 +94,27 @@ class GameModel:
         self._egg_range: int = 10
         self.leaderboard: list[int] = []
         
+        self._just_defeated_boss = False
+        self._just_unlocked_egghancement = False
+        self._just_died = False
+
         self.waiting_for_egghancement = False
         self.hp_incr = settings["hp_incr"]
         self.attack_incr = settings["attack_incr"]
         self.speed_incr = settings["speed_incr"]
         self.egghancement_threshhold = settings["egghancement_threshhold"]
+
+        self.eggnemy_hp_incr = settings["eggnemy_wave_increment_hp"]
+        self.eggnemy_attack_incr = settings["eggnemy_wave_increment_attack"]
+        self.eggnemy_speed_incr = settings["eggnemy_wave_increment_speed"]
+        
+        self.boss_hp_incr = settings["boss_wave_increment_hp"]
+        self.boss_attack_incr = settings["boss_wave_increment_attack"]
+        self.boss_speed_incr = settings["boss_wave_increment_speed"]
+
         self.invalid_enemy_x_spawn: list[int] = [_ for _ in range(self.width//2-12, self.width//2+self._settings["egg_width"]+13)]
         self.invalid_enemy_y_spawn: list[int] = [_ for _ in range(self.height//2-12, self.height//2+self._settings["egg_height"]+13)]
 
-        self._just_defeated_boss = False
-        self._just_unlocked_egghancement = False
-        self._just_died = False
         
 
         self.init_state()
@@ -158,9 +168,9 @@ class GameModel:
                     y,
                     self._settings["eggnemy_width"],
                     self._settings["eggnemy_height"],
-                    self._settings["eggnemy_initial_hp"] + self._settings["eggnemy_wave_increment_hp"] * self.wave,
-                    self._settings["eggnemy_initial_attack"] + self._settings["eggnemy_wave_increment_attack"] * self.wave,
-                    self._settings["eggnemy_initial_speed"] + self._settings["eggnemy_wave_increment_speed"] * self.wave
+                    self._settings["eggnemy_initial_hp"] + self.eggnemy_hp_incr * self.wave,
+                    self._settings["eggnemy_initial_attack"] + self.eggnemy_attack_incr * self.wave,
+                    self._settings["eggnemy_initial_speed"] + self.eggnemy_speed_incr * self.wave
                 )
                 if new_enemy.center not in occupied_centers:
                     self.normal_eggnemies.append(new_enemy)
@@ -295,9 +305,9 @@ class GameModel:
                     x, y,
                     self._settings["boss_width"],
                     self._settings["boss_height"],
-                    self._settings["boss_initial_hp"] + self._settings["boss_wave_increment_hp"] * self.wave,
-                    self._settings["boss_initial_attack"] + self._settings["boss_wave_increment_attack"] * self.wave,
-                    self._settings["boss_initial_speed"] + self._settings["boss_wave_increment_speed"] * self.wave
+                    self._settings["boss_initial_hp"] + self.boss_hp_incr * self.wave,
+                    self._settings["boss_initial_attack"] + self.boss_attack_incr * self.wave,
+                    self._settings["boss_initial_speed"] + self.boss_speed_incr * self.wave
                 )
                 if all(new_boss.center != e.center for e in self.current_total_eggnemies):
                     self.bosses.append(new_boss)
